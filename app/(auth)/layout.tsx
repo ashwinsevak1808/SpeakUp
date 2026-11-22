@@ -21,7 +21,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="mb-8 lg:hidden"><Logo /></div>
           {children}
           <p className="mt-8 text-xs leading-relaxed text-muted">
-            Your progress is saved to your account, so you can continue on any phone or computer. Trainers log in here too.
+            Your progress is saved to your account, so you can continue on any phone or computer.
           </p>
           <Link href="/" className="mt-6 inline-block text-sm text-muted hover:text-brand-800">← Back to website</Link>
         </div>

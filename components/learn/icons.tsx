@@ -62,6 +62,7 @@ export const Radio = mk(H.LiveStreaming02Icon);
 export const Printer = mk(H.PrinterIcon);
 export const Circle = mk(H.CircleIcon);
 export const Eye = mk(H.EyeIcon);
+export const EyeOff = mk(H.ViewOffSlashIcon);
 export const Sparkles = mk(H.SparklesIcon);
 export const Clock = mk(H.Clock01Icon);
 export const Zap = mk(H.FlashIcon);

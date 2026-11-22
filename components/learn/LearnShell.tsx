@@ -12,7 +12,7 @@ import {
   Award, Bell, BookOpen, CalendarDays, ChevronRight, Flame, Flag, Help, LayoutDashboard, Lightbulb, Play, Lock, LogOut, Map, Menu,
   PenLine, RotateCcw, Search, Settings, SidebarToggle, Unfold, UserRound, Video, X, type IconType,
 } from "@/components/learn/icons";
-import { isStaff, logout, streakOf, useAuth } from "@/lib/auth";
+import { logout, streakOf, useAuth } from "@/lib/auth";
 import { CourseProvider, useCourse } from "@/lib/course";
 import { currentNode, statusOf, MILESTONES } from "@/lib/path-state";
 import { countdown, fmtTime, isPast, startsInMin } from "@/lib/live";
@@ -216,7 +216,6 @@ function Account({ collapsed, onLeave }: { collapsed: boolean; onLeave: () => vo
         <div role="menu" className="nx-pop absolute bottom-full left-0 z-40 mb-2 w-60 rounded-[var(--radius-lg)] bg-white p-1.5 shadow-[var(--shadow-pop)]">
           <div className="px-2.5 py-2"><div className="ty-subject ty-ink truncate">{user.name}</div><div className="ty-note ty-muted truncate">{user.email}</div><Badge tone={user.enrolled ? "success" : "neutral"} className="mt-2">{user.role === "owner" ? "Owner" : user.role === "trainer" ? "Trainer" : user.enrolled ? "Full plan" : "Free"}</Badge></div>
           <div className="my-1 h-px bg-[var(--border)]" />
-          {isStaff(user.role) && <Link role="menuitem" href="/admin" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] font-medium text-[var(--accent-text)] hover:bg-[var(--surface-hover)]"><LayoutDashboard className="h-4 w-4" />Admin panel</Link>}
           <Link role="menuitem" href="/learn/settings" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><Settings className="h-4 w-4" />Settings and voice</Link>
           <Link role="menuitem" href="/" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><BookOpen className="h-4 w-4" />Visit the website</Link>
           <button role="menuitem" onClick={onLeave} className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><LogOut className="h-4 w-4" />Log out</button>

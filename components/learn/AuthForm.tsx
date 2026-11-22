@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { isStaff, login, requestPasswordReset, signup, updatePassword, useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff } from "@/components/learn/icons";
 
 type Mode = "login" | "signup" | "forgot" | "reset";
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -20,6 +21,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [formErr, setFormErr] = useState(linkError ? "That link has expired or was already used. Please try again." : "");
   const [sent, setSent] = useState<"" | "confirm" | "reset">("");
   const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => { if (status === "auth" && mode !== "reset") router.replace(dest); }, [status, dest, router, mode]);
 
@@ -73,12 +75,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <label htmlFor={`a-${name}`} className="block text-sm font-semibold text-ink">{label}</label>
         {name === "password" && mode === "login" && <Link href="/forgot-password" className="text-sm font-medium text-brand-700 underline-offset-4 hover:underline">Forgot password?</Link>}
       </div>
-      <input
-        id={`a-${name}`} name={name} type={type} autoComplete={auto} value={v[name]}
-        onChange={(e) => setV({ ...v, [name]: e.target.value })}
-        aria-invalid={!!errs[name]} aria-describedby={errs[name] ? `a-${name}-err` : undefined}
-        className={cn("w-full rounded-md border px-4 py-3 outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20", errs[name] ? "border-red-600" : "border-brand-300")}
-      />
+      <div className="relative">
+        <input
+          id={`a-${name}`} name={name} type={name === "password" && show ? "text" : type} autoComplete={auto} value={v[name]}
+          onChange={(e) => setV({ ...v, [name]: e.target.value })}
+          aria-invalid={!!errs[name]} aria-describedby={errs[name] ? `a-${name}-err` : undefined}
+          className={cn("w-full rounded-md border px-4 py-3 outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20", name === "password" && "pr-12", errs[name] ? "border-red-600" : "border-brand-300")}
+        />
+        {name === "password" && (
+          <button type="button" onClick={() => setShow((x) => !x)} aria-label={show ? "Hide password" : "Show password"} aria-pressed={show} aria-controls={`a-${name}`}
+            className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-md text-[var(--text-subtle,#8c968f)] transition-colors hover:text-brand-800">
+            {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </button>
+        )}
+      </div>
       {errs[name] && <p id={`a-${name}-err`} role="alert" className="mt-1 text-sm font-medium text-red-600">{errs[name]}</p>}
     </div>
   );

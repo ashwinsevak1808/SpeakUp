@@ -10,7 +10,8 @@
     "db:migrate": "node --env-file=.env.local scripts/db.mjs migrate",
     "db:role": "node --env-file=.env.local scripts/db.mjs role",
     "db:status": "node --env-file=.env.local scripts/db.mjs status",
-    "db:payments": "node --env-file=.env.local scripts/db.mjs payments"
+    "db:payments": "node --env-file=.env.local scripts/db.mjs payments",
+    "db:wipe": "node --env-file=.env.local scripts/db.mjs wipe"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.4.0",

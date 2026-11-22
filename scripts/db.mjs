@@ -56,6 +56,30 @@ async function payments() {
   console.log(`Plan: ${name} at ₹${price}. Online payment is ${secret ? "ON" : "OFF (no RAZORPAY_KEY_SECRET in .env.local)"}.`);
 }
 
+/** DANGER: delete every account and all data (tables, rules and payment settings stay), then create one owner.
+ *  npm run db:wipe -- --yes owner@email.com "Password" "Owner Name" */
+async function wipe() {
+  const [flag, email, password, name = "Owner"] = args;
+  if (flag !== "--yes" || !email || !password) { console.error('Usage: npm run db:wipe -- --yes owner@email.com "Password" "Owner Name"\nThis deletes ALL accounts, progress, classes, payments and leads.'); process.exit(1); }
+  if (password.length < 8) { console.error("Use a password of at least 8 characters."); process.exit(1); }
+  await client.query("begin");
+  try {
+    await client.query("truncate public.week_unlocks, public.payments, public.certificates, public.staff_notes, public.enrol_requests, public.bookings, public.session_links, public.sessions, public.leads, public.staff_invites, public.course_content, public.student_data restart identity cascade");
+    await client.query("delete from auth.users");
+    await client.query(`with u as (
+      insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+        created_at, updated_at, confirmation_token, recovery_token, email_change_token_new, email_change, email_change_token_current, reauthentication_token, phone_change, phone_change_token)
+      values ('00000000-0000-0000-0000-000000000000', gen_random_uuid(), 'authenticated', 'authenticated', lower($1), crypt($2, gen_salt('bf')), now(),
+        '{"provider":"email","providers":["email"]}', jsonb_build_object('name', $3::text), now(), now(), '', '', '', '', '', '', '', '')
+      returning id, email)
+      insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+      select gen_random_uuid(), u.id, u.id::text, 'email', jsonb_build_object('sub', u.id::text, 'email', u.email, 'email_verified', true), now(), now(), now() from u`, [email.trim(), password, name]);
+    await client.query("update public.profiles set role = 'owner' where email = lower($1)", [email.trim()]);
+    await client.query("commit");
+  } catch (e) { await client.query("rollback"); throw new Error("Nothing was changed: " + e.message); }
+  console.log(`Database cleaned. ${email.trim().toLowerCase()} is the owner and can log in now (email already confirmed).`);
+}
+
 async function status() {
   const m = await client.query("select name, applied_at from ops.migrations order by name").catch(() => ({ rows: [] }));
   for (const r of m.rows) console.log(`migration ${r.name}  ${r.applied_at.toISOString()}`);
@@ -69,6 +93,7 @@ try {
   else if (cmd === "role") await role();
   else if (cmd === "status") await status();
   else if (cmd === "payments") await payments();
+  else if (cmd === "wipe") await wipe();
   else { console.error("Commands: migrate | role <email> <owner|trainer|student> | status | payments [off]"); process.exitCode = 1; }
 } catch (e) { console.error(e.message); process.exitCode = 1; }
 finally { await client.end(); }
