@@ -9,9 +9,12 @@ import { useAuth } from "@/lib/auth";
 import { PageTitle } from "@/components/learn/ui";
 import { cn } from "@/lib/utils";
 import { SelectMenu } from "@/components/ui/Dropdown";
+import { DatePicker } from "@/components/ui/DatePicker";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 const input = "w-full min-w-0 rounded-lg border border-brand-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-500/20";
 const Label = ({ children, htmlFor }: { children: React.ReactNode; htmlFor: string }) => <label htmlFor={htmlFor} className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">{children}</label>;
+const today = () => new Date(Date.now() + 5.5 * 3600000).toISOString().slice(0, 10);
 const tomorrow = () => new Date(Date.now() + 5.5 * 3600000 + 86400000).toISOString().slice(0, 10);
 
 export default function TrainerSchedule() {
@@ -47,7 +50,7 @@ export default function TrainerSchedule() {
         <div><Label htmlFor="kind">Type</Label><SelectMenu id="kind" value={f.kind} onChange={(e) => { const k = e.target.value as SessionKind; setF((x) => ({ ...x, kind: k, minutes: k === "private" ? 30 : k === "inperson" ? 90 : 60, title: k === "private" ? "Private session (30 min)" : k === "inperson" ? "Mumbai Practical Session" : x.title, repeat: k === "inperson" ? "weekly" : x.repeat })); }}>{(["group", "private"] as SessionKind[]).map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}</SelectMenu></div>
         <div><Label htmlFor="title">Title</Label><input id="title" value={f.title} onChange={(e) => set("title", e.target.value)} className={input} /></div>
         <div><Label htmlFor="trainer">Trainer name</Label><input id="trainer" value={f.trainer} onChange={(e) => set("trainer", e.target.value)} className={input} /></div>
-        <div className="grid grid-cols-2 gap-3"><div><Label htmlFor="date">Start date</Label><input id="date" type="date" value={f.date} onChange={(e) => set("date", e.target.value)} className={input} /></div><div><Label htmlFor="time">Time (India)</Label><input id="time" type="time" value={f.time} onChange={(e) => set("time", e.target.value)} className={input} /></div></div>
+        <div className="grid grid-cols-2 gap-3"><div><Label htmlFor="date">Start date</Label><DatePicker id="date" value={f.date} onChange={(v) => set("date", v)} min={today()} /></div><div><Label htmlFor="time">Time (India)</Label><TimePicker id="time" value={f.time} onChange={(v) => set("time", v)} note="" /></div></div>
         <div className="grid grid-cols-2 gap-3"><div><Label htmlFor="minutes">Length (min)</Label><input id="minutes" type="number" min={10} max={240} value={f.minutes} onChange={(e) => set("minutes", Number(e.target.value))} className={input} /></div>{f.kind === "private" && <div><Label htmlFor="price">Price (₹)</Label><input id="price" type="number" min={0} value={f.price} onChange={(e) => set("price", Number(e.target.value))} className={input} /></div>}</div>
         {f.kind !== "inperson" ? <div><Label htmlFor="link">Google Meet link</Label><input id="link" placeholder="https://meet.google.com/abc-defg-hij" value={f.link} onChange={(e) => set("link", e.target.value)} className={input} /></div> : <div><Label htmlFor="venue">Venue</Label><input id="venue" value={f.venue} onChange={(e) => set("venue", e.target.value)} className={input} /></div>}
         <div><Label htmlFor="notes">Notes for students (optional)</Label><input id="notes" value={f.notes} onChange={(e) => set("notes", e.target.value)} className={input} /></div>
@@ -91,8 +94,8 @@ function Row({ s, now, onSave, onDelete }: { s: SessionView; now: Date; onSave: 
           <div><Label htmlFor={`t-${s.id}`}>Title</Label><input id={`t-${s.id}`} value={v.title} onChange={(e) => setV({ ...v, title: e.target.value })} className={input} /></div>
           <div><Label htmlFor={`tr-${s.id}`}>Trainer</Label><input id={`tr-${s.id}`} value={v.trainer} onChange={(e) => setV({ ...v, trainer: e.target.value })} className={input} /></div>
           <div className="sm:col-span-2"><Label htmlFor={`l-${s.id}`}>Google Meet link</Label><input id={`l-${s.id}`} value={v.link} onChange={(e) => setV({ ...v, link: e.target.value })} className={input} placeholder="https://meet.google.com/..." /></div>
-          <div><Label htmlFor={`d-${s.id}`}>Date</Label><input id={`d-${s.id}`} type="date" value={v.date} onChange={(e) => setV({ ...v, date: e.target.value })} className={input} /></div>
-          <div><Label htmlFor={`ti-${s.id}`}>Time (India)</Label><input id={`ti-${s.id}`} type="time" value={v.time} onChange={(e) => setV({ ...v, time: e.target.value })} className={input} /></div>
+          <div><Label htmlFor={`d-${s.id}`}>Date</Label><DatePicker id={`d-${s.id}`} value={v.date} onChange={(d) => setV({ ...v, date: d })} /></div>
+          <div><Label htmlFor={`ti-${s.id}`}>Time (India)</Label><TimePicker id={`ti-${s.id}`} value={v.time} onChange={(t) => setV({ ...v, time: t })} note="" /></div>
           <div className="sm:col-span-2"><Label htmlFor={`n-${s.id}`}>Notes</Label><input id={`n-${s.id}`} value={v.notes} onChange={(e) => setV({ ...v, notes: e.target.value })} className={input} /></div>
           <div className="sm:col-span-2"><button onClick={() => { onSave(s.id, v); setEdit(false); }} className="rounded-lg bg-accent-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent-700">Save changes</button></div>
         </div>
