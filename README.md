@@ -1,51 +1,37 @@
-# Your English: website
+# SpeakUp
 
-Next.js 16 (App Router) + Tailwind CSS 4 + Framer Motion. 17 routes.
+Learn English online: a 12-week guided course (60 daily lessons, 44 grammar topics, weekly checkpoints,
+speaking checks), live online classes with trainers, certificates, and an admin panel for the team.
 
-## Run
+**Stack:** Next.js 16 (App Router) · React 19 · Tailwind CSS 4 · Supabase (Postgres, Auth, row-level security) · Razorpay
+
+## Run it
+
 ```bash
 npm install
-npm run dev      # http://localhost:3000
-npm run build && npm start
+cp .env.local.example .env.local   # then fill in the values
+npm run db:migrate                 # create the database tables (first time / after updates)
+npm run dev                        # http://localhost:3000
 ```
 
-## Edit your content (almost everything is in ONE file)
-`lib/data.ts`: business name, phone, WhatsApp, address, social links, courses, syllabus,
-trainers, testimonials, batches & fees, FAQs, level-test questions.
+Full setup, roles, payments, emails and going live: **[SETUP-SUPABASE.md](SETUP-SUPABASE.md)**.
 
-Other things to replace before launch:
-- `SITE.url` in `lib/data.ts`: your real domain (used for SEO, sitemap).
-- `SITE.mapEmbed`: Google Maps embed URL (Share → Embed a map → copy the `src`).
-- `public/sample-chapter.pdf`: your real e-book sample chapter.
-- **Photos:** see `IMAGE-PROMPTS.md`. Every image is a placeholder in `public/images/`; overwrite each with a same-named .jpg.
-- Brand colours: `@theme` block at the top of `app/globals.css` (one green family: change `brand-*` and everything follows).
+## Where things are
 
-## Receive form leads
-All forms post to `app/api/lead/route.ts`, which currently validates and logs.
-Add one of: email (Resend), Google Sheets webhook, WhatsApp/Slack webhook, or a CRM.
+| Area | Path |
+|---|---|
+| Public website | `app/(site)`, copy in `lib/data.ts` |
+| Student app | `app/learn`, `components/learn` |
+| Admin panel (trainers + owner) | `app/admin`, `components/admin` |
+| Course content (12 weeks) | `lib/path-data.ts`, `lib/path-month2.ts`, `lib/path-month3.ts` |
+| Who can open what (free period, prices) | `lib/access.ts`, `lib/learn-data.ts` |
+| Database schema and security rules | `supabase/migrations/*.sql` |
+| Payments | `lib/pay.ts`, `app/api/pay/*`, `lib/server/razorpay.ts` |
 
-## Pages
-/ · /about · /courses · /courses/[slug] (5 courses) · /how-it-works · /beyond-the-classroom ·
-/trainers · /success-stories · /pricing · /free-ebook · /faq · /corporate · /contact · /level-test
+## Access model
 
-## Student area (online-first)
-A guided 12-week course, not a test. Plain black/white/grey UI (`.app-theme` in `app/globals.css`).
+- Until **28 February 2027** every lesson, test and grammar topic is free. Live classes need the full plan.
+- After that, weeks 1 and 2 stay free; any other week unlocks for **₹1,000**.
+- **Full plan ₹3,000:** live online classes + every chapter for 3 months + Certificate of Completion.
 
-**Students** (`/signup`, `/login`, then `/learn`): dashboard with today's lesson ("Start here"), LIVE indicator,
-My Path (5-step daily lessons + weekly checkpoints), Live Classes (calendar + Google Meet join links for enrolled
-students), Private Sessions (Rs 150 per 30 min), Review (your own missed exercises), Library, Tips, Certificate,
-Settings (level, goal, voice).
-
-**Trainers** (`/trainer`): schedule classes (one-off or daily/weekdays/weekly series), paste Google Meet links, press
-**Go live**, see private bookings, and edit/add lessons. Sign in with `TRAINER_PASSCODE` (copy `.env.local.example` to
-`.env.local`). With no env set, local development uses the passcode `trainer-demo`.
-
-**Backend** (`app/api/*`, data in `/data/*.json`, git-ignored): `content` (lessons), `sessions` (classes + private
-slots + bookings), `trainer` (sign-in). Lessons come from the backend, so trainers improve them without a code change.
-The built-in course in `lib/path-data.ts` is only the starting copy.
-
-**Personal**: level (intermediate students skip 4 beginner lessons), goal (lessons tagged "For your goal"), the voice and
-speed used for listening, and a Review list built from each student's own mistakes. Speech is checked in the browser
-(Chrome/Edge); no audio is recorded or stored by us.
-
-Still in **demo mode**: accounts, enrolment and payment are simulated in the browser. See `SETUP-SUPABASE.md`.
+Secrets live only in `.env.local` (git-ignored). Never commit it.

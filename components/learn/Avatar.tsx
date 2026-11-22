@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 /** Illustrated avatars. Add one by adding a line: background pair, skin, hair, shirt, hair style. */
 type Look = { bg: [string, string]; skin: string; hair: string; shirt: string; style: "short" | "long" | "bun" | "curly" | "cap" | "bald" };
 export const AVATARS: Record<string, Look> = {
-  sun: { bg: ["#fde68a", "#fbbf24"], skin: "#c68642", hair: "#1f1308", shirt: "#4f46e5", style: "short" },
-  sky: { bg: ["#bae6fd", "#38bdf8"], skin: "#f1c27d", hair: "#6b3f1d", shirt: "#0f766e", style: "long" },
-  rose: { bg: ["#fecdd3", "#fb7185"], skin: "#8d5524", hair: "#0b0b0b", shirt: "#7c3aed", style: "bun" },
-  mint: { bg: ["#bbf7d0", "#4ade80"], skin: "#e0ac69", hair: "#2b1b0e", shirt: "#be123c", style: "curly" },
-  lilac: { bg: ["#ddd6fe", "#a78bfa"], skin: "#ffdbac", hair: "#b45309", shirt: "#1d4ed8", style: "short" },
-  peach: { bg: ["#fed7aa", "#fb923c"], skin: "#a0673a", hair: "#111111", shirt: "#0e7490", style: "cap" },
-  night: { bg: ["#c7d2fe", "#6366f1"], skin: "#d9a066", hair: "#3b2412", shirt: "#db2777", style: "long" },
-  stone: { bg: ["#e2e8f0", "#94a3b8"], skin: "#f5cba7", hair: "#4a4a4a", shirt: "#15803d", style: "bald" },
+  sun: { bg: ["#dcede3", "#94c6a9"], skin: "#c68642", hair: "#1f1308", shirt: "#1f7249", style: "short" },
+  sky: { bg: ["#eff2f0", "#cbd2cd"], skin: "#f1c27d", hair: "#6b3f1d", shirt: "#3d4741", style: "long" },
+  rose: { bg: ["#c3dfce", "#5ea67f"], skin: "#8d5524", hair: "#0b0b0b", shirt: "#175c3b", style: "bun" },
+  mint: { bg: ["#edf6f0", "#b7d6c3"], skin: "#e0ac69", hair: "#2b1b0e", shirt: "#59645d", style: "curly" },
+  lilac: { bg: ["#e3e7e4", "#8c968f"], skin: "#ffdbac", hair: "#b45309", shirt: "#124a31", style: "short" },
+  peach: { bg: ["#dcede3", "#2f8a5e"], skin: "#a0673a", hair: "#111111", shirt: "#232b26", style: "cap" },
+  night: { bg: ["#eff2f0", "#94c6a9"], skin: "#d9a066", hair: "#3b2412", shirt: "#2f8a5e", style: "long" },
+  stone: { bg: ["#f4f6f5", "#cbd2cd"], skin: "#f5cba7", hair: "#4a4a4a", shirt: "#1f7249", style: "bald" },
 };
 export const AVATAR_IDS = Object.keys(AVATARS);
 

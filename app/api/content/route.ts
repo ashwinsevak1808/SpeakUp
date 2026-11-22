@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { readJson } from "@/lib/server/db";
-import { WEEKS, type Week } from "@/lib/path-data";
+import { loadContent } from "@/lib/server/content";
+import { publicSupabase } from "@/lib/supabase/server";
 
-/** Lessons come from here, not from the code. Starts as the built-in course; trainers edit it from /trainer. */
-export type ContentFile = { weeks: Week[]; updatedAt: string };
-export const CONTENT_FILE = "content.json";
-export const loadContent = () => readJson<ContentFile>(CONTENT_FILE, () => ({ weeks: WEEKS, updatedAt: new Date().toISOString() }));
-
+/** The course everyone learns from (the built-in course until a trainer saves an edit). */
 export async function GET() {
-  return NextResponse.json(await loadContent());
+  try { return NextResponse.json(await loadContent(publicSupabase())); }
+  catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
 }

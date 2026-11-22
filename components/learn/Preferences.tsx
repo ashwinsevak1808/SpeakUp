@@ -86,7 +86,7 @@ export function OnboardingDialog() {
   const { user, profile } = useAuth();
   if (!user || profile.onboarded) return null;
   return (
-    <div className="fixed inset-0 z-[80] overflow-y-auto bg-slate-900/35 backdrop-blur-[2px] p-4" role="dialog" aria-modal="true" aria-label="Set up your learning">
+    <div className="fixed inset-0 z-[80] overflow-y-auto bg-[rgba(19,26,22,.35)] backdrop-blur-[2px] p-4" role="dialog" aria-modal="true" aria-label="Set up your learning">
       <div className="mx-auto my-8 w-full max-w-2xl rounded-[var(--radius-xl)] bg-white p-6 shadow-2xl sm:p-8">
         <h2 className="font-display text-2xl font-semibold text-brand-900">Welcome, {user.name.split(" ")[0]}. Let&apos;s set up your learning.</h2>
         <p className="mb-6 mt-1 text-muted">Three quick choices make the course fit you. You can change them any time in Settings.</p>

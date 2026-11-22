@@ -1,6 +1,5 @@
 import type { Progress } from "./auth";
 import { streakOf } from "./auth";
-import { FREE_WEEKS } from "./path-data";
 import { certificateStatus, weekDone, type Course, type Node } from "./course-core";
 
 export type Status = "done" | "current" | "locked" | "paywall";
@@ -8,10 +7,11 @@ export type Status = "done" | "current" | "locked" | "paywall";
 /** First node in the student's path that is not finished. */
 export const currentNode = (c: Course, p: Progress): Node | null => c.sequence.find((n) => !p.done.includes(n.id)) ?? null;
 
-/** done = finished, current = do this next, locked = comes later, paywall = needs enrolment. */
-export function statusOf(c: Course, node: Node, p: Progress, enrolled: boolean): Status {
+/** done = finished, current = do this next, locked = comes later, paywall = needs a plan or a week unlock.
+ *  open(week) says whether this student may open that week (see lib/access.ts). */
+export function statusOf(c: Course, node: Node, p: Progress, open: (week: number) => boolean): Status {
   if (p.done.includes(node.id)) return "done";
-  if (node.week > FREE_WEEKS && !enrolled) return "paywall";
+  if (!open(node.week)) return "paywall";
   const cur = currentNode(c, p);
   return cur && cur.id === node.id ? "current" : "locked";
 }

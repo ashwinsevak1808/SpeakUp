@@ -2,7 +2,7 @@
 import { Check, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { COURSES, LEVELS, QUIZ } from "@/lib/data";
+import { LEVELS, QUIZ } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { LeadForm, type Field } from "./LeadForm";
 
@@ -14,7 +14,6 @@ export function LevelTest() {
 
   const score = answers.filter((a, i) => a === QUIZ[i].answer).length;
   const level = LEVELS.find((l) => score >= l.min && score <= l.max)!;
-  const course = COURSES.find((c) => c.slug === level.course)!;
 
   const choose = (i: number) => {
     if (picked !== null) return;
@@ -37,7 +36,7 @@ export function LevelTest() {
         {step === -1 && (
           <div>
             <h2 className="font-display text-3xl font-bold text-brand-900">Check your English level</h2>
-            <p className="mt-3 text-lg text-muted">{n} short multiple-choice questions. It takes about 3 minutes and needs no sign-up. You will get your level and a course recommendation straight away.</p>
+            <p className="mt-3 text-lg text-muted">{n} short multiple-choice questions. It takes about 3 minutes and needs no sign-up. You will get your level and a recommendation straight away.</p>
             <button onClick={() => setStep(0)} className="mt-8 rounded-md bg-brand-700 px-8 py-3.5 font-semibold text-white transition-colors hover:bg-brand-800">Start the test</button>
           </div>
         )}
@@ -89,10 +88,10 @@ export function LevelTest() {
             <p className="text-lg text-muted">{level.text}</p>
 
             <div className="mt-8 rounded-lg border border-line bg-brand-50 p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted">Recommended course</p>
-              <div className="mt-1 font-display text-xl font-bold text-brand-900">{course.title}</div>
-              <div className="text-sm text-muted">{course.duration} · {course.fee}</div>
-              <Link href={`/courses/${course.slug}`} className="mt-4 inline-block rounded-md bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800">View this course</Link>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted">Your next step</p>
+              <div className="mt-1 font-display text-xl font-bold text-brand-900">Register free and choose “{level.pick}”</div>
+              <div className="text-sm text-muted">All lessons are free until 28 February 2027</div>
+              <Link href="/signup" className="mt-4 inline-block rounded-md bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800">Register for free</Link>
             </div>
 
             <div className="mt-10 border-t border-line pt-8">

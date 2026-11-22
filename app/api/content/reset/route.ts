@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { isTrainer } from "@/lib/server/trainer-auth";
-import { withLock, writeJson } from "@/lib/server/db";
-import { WEEKS } from "@/lib/path-data";
-import { CONTENT_FILE } from "../route";
+import { requireUser } from "@/lib/server/guard";
 
-/** Trainer only: throw away all lesson edits and go back to the built-in course. */
+/** Staff: throw away all lesson edits and go back to the built-in course. */
 export async function POST() {
-  if (!(await isTrainer())) return NextResponse.json({ error: "Trainer sign-in required." }, { status: 401 });
-  await withLock(() => writeJson(CONTENT_FILE, { weeks: WEEKS, updatedAt: new Date().toISOString() }));
+  const g = await requireUser(true); if (g.error) return g.error;
+  const { error } = await g.sb.from("course_content").delete().eq("id", 1);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }

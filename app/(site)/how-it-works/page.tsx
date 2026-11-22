@@ -1,26 +1,27 @@
 import type { Metadata } from "next";
 import { STEPS } from "@/lib/data";
-import { PageHero, Section, SectionHeading } from "@/components/Section";
+import { ButtonLink, PageHero, Section, SectionHeading } from "@/components/Section";
 import { Reveal } from "@/components/Reveal";
 import { Icon } from "@/components/Icon";
 import { CTA } from "@/components/CTA";
 
-export const metadata: Metadata = { title: "How It Works", description: "Live online classes, daily practice in your student login, an e-book and progress tracking: the system that builds real fluency." };
+export const metadata: Metadata = { title: "How It Works", description: "Register free, do one 15-minute lesson a day, join live online classes with our trainers, and earn your certificate." };
 
-const WEEK = [
-  ["Mon", "Daily speaking task"], ["Tue", "Voice-note practice"], ["Wed", "E-book lesson"], ["Thu", "Word of the day"],
-  ["Fri", "Practice partner call"], ["Sat", "Class day"], ["Sun", "Speaking club"],
-];
-const PROGRESS = [
-  { t: "Day 1: Baseline", d: "A friendly speaking check to see where you are today." },
-  { t: "Monthly: Progress report", d: "Personal feedback on fluency, vocabulary, grammar and confidence." },
-  { t: "Final: Assessment", d: "A final assessment and certificate that mark how far you have come." },
+const INSIDE = [
+  { icon: "chart", t: "Your dashboard", d: "Today's lesson, your streak, points and what is coming next, all in one place." },
+  { icon: "pen", t: "Grammar guide", d: "Every grammar topic in the course, with where it is taught and what you have learned." },
+  { icon: "clipboard", t: "Review list", d: "Exercises you got wrong come back for quick practice until you get them right." },
+  { icon: "mic", t: "Speaking checks", d: "Say your answers aloud. The app checks them, and never records or stores your voice." },
+  { icon: "users", t: "Live classes", d: "See the class timetable and join on Google Meet with one tap (full plan)." },
+  { icon: "award", t: "Certificate", d: "Finish all 12 weeks on the full plan and get a certificate employers can verify." },
 ];
 
 export default function HowItWorks() {
   return (
     <>
-      <PageHero eyebrow="How it works" title="Fluency is a habit, so we build one." text="Four simple ingredients and one friendly routine. Here is exactly what your week looks like with us." image="how-it-works" imageAlt="A trainer guiding learners through a speaking exercise" />
+      <PageHero eyebrow="How it works" title="Fluency is a habit, so we build one." text="Four simple steps, all online. Here is exactly how learning with SpeakUp works.">
+        <ButtonLink href="/signup" size="lg">Register for free</ButtonLink>
+      </PageHero>
 
       <Section>
         <div className="space-y-6">
@@ -42,26 +43,13 @@ export default function HowItWorks() {
       </Section>
 
       <Section tone="soft">
-        <SectionHeading eyebrow="A week with us" title="Small daily steps, big results" text="Just 10 to 15 minutes a day between classes keeps English alive in your mind." />
-        <div className="grid gap-px overflow-hidden rounded-lg border border-line bg-line grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
-          {WEEK.map(([d, t]) => (
-            <div key={d} className={`p-5 ${d === "Sat" ? "bg-brand-700 text-white" : "bg-white"}`}>
-              <div className={`text-xs font-semibold uppercase tracking-wider ${d === "Sat" ? "text-brand-200" : "text-brand-600"}`}>{d}</div>
-              <div className="mt-2 font-display font-semibold">{t}</div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section>
-        <SectionHeading eyebrow="Progress tracking" title="See your growth, not just feel it" />
-        <div className="grid gap-6 md:grid-cols-3">
-          {PROGRESS.map((p, i) => (
-            <Reveal key={p.t} delay={i * 0.06}>
-              <div className="h-full border-t-2 border-brand-600 pt-5">
-                <h3 className="font-display text-lg font-semibold text-brand-900">{p.t}</h3>
-                <p className="mt-2 text-muted">{p.d}</p>
-              </div>
+        <SectionHeading eyebrow="Inside your account" title="Everything you need to keep going" />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {INSIDE.map((x, i) => (
+            <Reveal key={x.t} delay={i * 0.04} className="rounded-lg bg-white p-6">
+              <div className="mb-3 grid h-11 w-11 place-items-center rounded-md bg-brand-100 text-brand-700"><Icon name={x.icon} /></div>
+              <h3 className="font-display text-lg font-semibold text-brand-900">{x.t}</h3>
+              <p className="mt-1 text-[15px] text-muted">{x.d}</p>
             </Reveal>
           ))}
         </div>

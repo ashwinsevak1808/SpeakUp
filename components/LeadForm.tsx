@@ -198,8 +198,8 @@ export const DEMO_FIELDS: Field[] = [
   { name: "name", label: "Full name", half: true, minLength: 2, placeholder: "Your name" },
   { name: "phone", label: "Mobile number", type: "tel", half: true, placeholder: "98765 43210" },
   { name: "email", label: "Email", type: "email", placeholder: "you@email.com" },
-  { name: "course", label: "I'm interested in", type: "select", options: ["Basic Communication", "Advanced Communication", "Interview Mastery", "Public Speaking Lab", "Corporate Training", "Not sure yet"] },
-  { name: "message", label: "Anything we should know?", type: "textarea", required: false, placeholder: "Your goals, preferred timing…" },
+  { name: "course", label: "I want help with", type: "select", options: ["Joining the course", "Live classes and the full plan", "Payment", "My account", "Something else"] },
+  { name: "message", label: "Anything we should know?", type: "textarea", required: false, placeholder: "Your question, your goals, a good time to call…" },
 ];
 export const EBOOK_FIELDS: Field[] = [
   { name: "name", label: "Full name", minLength: 2, placeholder: "Your name" },

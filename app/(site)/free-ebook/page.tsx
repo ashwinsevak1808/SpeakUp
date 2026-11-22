@@ -18,11 +18,11 @@ const INSIDE = [
 export default function Ebook() {
   return (
     <>
-      <PageHero eyebrow="Free e-book" title="Read a sample chapter. See how we teach." text="Our e-book is the backbone of every course. Download a free sample chapter and judge for yourself." />
+      <PageHero eyebrow="Free e-book" title="Read a sample chapter. See how we teach." text="A taste of how SpeakUp teaches. Download a free sample chapter and judge for yourself." />
       <Section>
         <div className="grid items-start gap-14 lg:grid-cols-2">
           <Reveal>
-            <Photo name="ebook-cover" alt="Cover of the Your English spoken English e-book" className="mx-auto mb-12 aspect-[3/4] w-56 rounded-md shadow-xl shadow-brand-900/20 sm:w-64" sizes="260px" />
+            <Photo name="ebook-cover" alt="Cover of the SpeakUp spoken English e-book" className="mx-auto mb-12 aspect-[3/4] w-56 rounded-md shadow-xl shadow-brand-900/20 sm:w-64" sizes="260px" />
             <h2 className="mb-6 font-display text-2xl font-bold text-brand-900">What is inside</h2>
             <ul className="grid gap-6 sm:grid-cols-2">
               {INSIDE.map((i) => (

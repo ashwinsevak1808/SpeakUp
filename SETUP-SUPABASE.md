@@ -1,95 +1,80 @@
-# Going from demo to real: accounts, payments, certificates
+# Running Your English: setup guide
 
-Right now the student area runs in **demo mode**: accounts and progress are saved in the
-visitor's own browser (`lib/store.ts`). That is perfect for testing and showing the product,
-but NOT for real students: nothing syncs between devices, and a student could edit their own
-progress or mark themselves enrolled. Before taking real money, do these three things.
+Everything (accounts, progress, classes, bookings, enrolments, payments, certificates, leads, lessons)
+lives in **Supabase**. The website is a Next.js app. Settings go in `.env.local` (see `.env.local.example`).
 
-All the pages only talk to `lib/auth.ts`. Replace what is inside it (and delete `lib/store.ts`)
-and every page keeps working.
+## Who can do what
 
-## 1. Accounts + progress: Supabase (free tier is enough for the first batch)
-1. Create a project at supabase.com. Copy the Project URL and anon key into `.env.local`:
-   `NEXT_PUBLIC_SUPABASE_URL=...` and `NEXT_PUBLIC_SUPABASE_ANON_KEY=...`
-2. `npm i @supabase/supabase-js`
-3. In the SQL editor, run:
+| Role | Where they work | Can |
+|---|---|---|
+| Student | `/learn` | learn, book private sessions, enrol, get a certificate |
+| Trainer | `/admin` | see every student, approve enrolments, run classes, edit lessons, see leads and payments |
+| Owner | `/admin` | everything a trainer can, plus Team (add/remove trainers) and deleting accounts |
 
-```sql
-create table profiles (
-  id uuid primary key references auth.users on delete cascade,
-  name text not null,
-  enrolled boolean not null default false,   -- ONLY the server may set this (see step 2)
-  plan text, mumbai boolean default false, enrolled_at timestamptz,
-  created_at timestamptz default now()
-);
-create table path_progress (          -- one row per lesson or checkpoint a student has touched
-  user_id uuid references profiles on delete cascade, node_id text,   -- 'd01'..'d20', 'cp1'..'cp4'
-  step int not null default 0,        -- last lesson step reached (0 warm-up .. 3 speak), for resume
-  done_at timestamptz, stars int,     -- done_at set when finished; stars (1-3) for checkpoints
-  primary key (user_id, node_id)
-);
-create table library_reads (user_id uuid references profiles on delete cascade, chapter_id text, read_at timestamptz default now(), primary key (user_id, chapter_id));
-create table activity_days (user_id uuid references profiles on delete cascade, day date, primary key (user_id, day));
-create table certificates (id text primary key, user_id uuid references profiles, issued_at timestamptz default now());
+Everyone logs in at `/login`. Trainers and owners land in the admin panel.
+These rules are enforced inside the database (row-level security), not only in the screens.
 
-alter table profiles enable row level security;
-alter table path_progress enable row level security;
-alter table library_reads enable row level security;
-alter table activity_days enable row level security;
-alter table certificates enable row level security;
+## First-time setup (already done for the current project)
 
-create policy "own profile read"   on profiles for select using (auth.uid() = id);
-create policy "own profile name"   on profiles for update using (auth.uid() = id) with check (auth.uid() = id and enrolled = (select enrolled from profiles where id = auth.uid()));
-create policy "own path"    on path_progress   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "own reads"   on library_reads   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "own days"    on activity_days   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-create policy "anyone can verify a certificate id" on certificates for select using (true);
-```
-4. In `lib/auth.ts`: `signup`/`login`/`logout` become `supabase.auth.signUp / signInWithPassword / signOut`;
-   `useAuth` reads the session and the rows above; `setStep` / `completeLesson` / `completeCheckpoint` / `toggleRead` upsert rows.
+1. Create a Supabase project. Copy the URL and publishable key into `.env.local`.
+2. Copy the **Session pooler** connection string (Connect button) into `SUPABASE_DB_URL`.
+3. `npm install`, then `npm run db:migrate` (creates all tables and security rules from `supabase/migrations`).
+4. Sign up on the site with your own email, then `npm run db:role -- you@email.com owner`.
+5. Add trainers from **Admin > Team** (enter their email; they get access when they sign up).
 
-## 2. Payment: Razorpay (UPI, cards, net banking; ~2% fee)
-**Never** mark a student enrolled from the browser. The flow must be:
-1. Student clicks Enrol -> your server route `POST /api/pay/order` creates a Razorpay order for the plan price.
-2. Browser opens Razorpay Checkout with that order id.
-3. Razorpay calls your webhook `POST /api/pay/webhook` (verify the signature with your webhook secret).
-4. The webhook, using the Supabase **service-role key** (server only), sets `profiles.enrolled = true`.
-Replace the button in `components/learn/EnrolDialog.tsx` with steps 1-2. Keep keys in `.env.local`, never in the repo.
+## Before real students sign up
 
-## 3. Certificates people can verify
-- When a student becomes eligible, a server route inserts a row in `certificates` and returns the id (`YE-2026-A1B2C3`).
-- Add a public page `/verify/[id]` that looks the id up and shows "Valid: <name>, completed <date>".
-  Employers can then check a certificate is real. (The demo certificate id is not verifiable.)
-- Wording: keep "Certificate of Completion". Do not claim government or university accreditation.
+1. **Emails (required).** Supabase's built-in email only reaches your own team and is heavily rate-limited.
+   - Either set up custom SMTP: Supabase > Authentication > Emails > SMTP settings (Resend, Brevo, Zoho…),
+   - or switch off "Confirm email" (Authentication > Sign In / Providers > Email) for now.
+2. **Website address.** Supabase > Authentication > URL Configuration: set Site URL to your domain and add
+   `https://YOUR-DOMAIN/auth/callback` to Redirect URLs (keep `http://localhost:3000/auth/callback` for testing).
+3. **Database password.** If it was ever shared, reset it (Database settings) and update `SUPABASE_DB_URL`.
+
+## Online payment (Razorpay)
+
+Until this is switched on, students press **Request enrolment**, you collect UPI / bank payment,
+and approve them in **Admin > Enrolments**. Private sessions are booked directly and paid to the trainer.
+
+To switch on card / UPI / net-banking payment:
+1. In Razorpay (start with **Test mode**), Settings > API Keys: copy Key Id and Key Secret.
+2. Webhooks: add `https://YOUR-DOMAIN/api/pay/webhook`, events `payment.captured` and `order.paid`, choose a secret.
+3. Put `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` in `.env.local` and on your host.
+4. Run `npm run db:payments` (copies the secret and the course price from `lib/learn-data.ts` into the database).
+   Run it again whenever you change the price. `npm run db:payments -- off` switches online payment off.
+
+How it stays safe: the price is decided by the database, Razorpay's signature is checked by the database,
+and only then is the student enrolled or the slot booked. Paid slots cannot be booked without paying.
+If two people pay for the same slot, the second payment is marked **Refund needed** in Admin > Payments.
+
+## Email alerts (optional)
+
+Create a free account at resend.com, then set `RESEND_API_KEY` and `ALERT_EMAIL` (comma-separated for several people).
+You get an email for each new lead, enrolment request, online payment and private booking.
+
+## Certificates
+
+When an enrolled student finishes every weekly checkpoint and opens the Certificate page, the database issues a
+permanent ID such as `YE-2026-A1B2C3`. Anyone can check it at `/verify?id=…`. Staff can issue or withdraw a
+certificate from the student's page in the admin panel.
+
+## Going live (hosting)
+
+Any Node host works (Vercel is simplest): import the `web` folder, add the environment variables from
+`.env.local.example` (not `SUPABASE_DB_URL`), deploy, then do "Website address" above and set the Razorpay webhook URL.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | run the site on http://localhost:3000 |
+| `npm run db:migrate` | apply new database changes from `supabase/migrations` |
+| `npm run db:role -- email owner\|trainer\|student` | change someone's role (or invite an email) |
+| `npm run db:payments` | switch on online payment after adding Razorpay keys |
+| `npm run db:status` | show applied migrations and how many accounts of each role |
 
 ## Also before launch
-- Put real Google Meet links and timings in `lib/learn-data.ts`.
-- Add your real domain to `SITE.url` in `lib/data.ts`; fill `/public/images` (see IMAGE-PROMPTS.md).
-- The lessons are served from `public/book`, a copy of your `book/` folder. If you edit the book, copy it again:
-  `cp -R ../book/chapters ../book/themes ../book/book.js ../book/index.html public/book/`
-- Send lead forms (`app/api/lead/route.ts`) somewhere real (email / Google Sheet).
-
-## Live classes, bookings and lessons (already built; what to change for production)
-The backend in `app/api/*` stores sessions and lessons in JSON files under `/data`. That is perfect on your own
-computer or a VPS. **Serverless hosts (Vercel) cannot keep files**, so move these to Supabase tables:
-
-```sql
-create table sessions (
-  id text primary key, kind text not null check (kind in ('group','private','inperson')),
-  title text not null, trainer text not null, start timestamptz not null, minutes int not null,
-  link text, venue text, notes text, live boolean, price int,
-  booked_by uuid references profiles, booked_at timestamptz
-);
-create table lessons (id text primary key, week int not null, day int not null, body jsonb not null, updated_at timestamptz default now());
-alter table profiles add column role text not null default 'student';   -- set 'trainer' for your trainers
-```
-Policies to add (this is what makes the join link genuinely private):
-- `sessions`: everyone may read rows **except the `link` column**; the link is returned only through a server function for
-  students whose `profiles.enrolled = true` (group classes) or who are `booked_by` (private sessions).
-- `sessions`, `lessons`: insert/update/delete only where the caller's `profiles.role = 'trainer'`.
-- Replace the trainer passcode in `lib/server/trainer-auth.ts` with Supabase Auth.
-
-**Known limits of the demo backend**
-- Enrolment is a flag in the student's own browser, so the Google Meet link is only hidden in the interface, not at the
-  network level. A technical student could read it from `/api/sessions`. Fixed by the policies above.
-- The private-session payment is simulated. Razorpay must create the order and confirm it on the server before a slot is booked.
+- Real Google Meet links are added per class in Admin > Classes.
+- Set `SITE.url`, phone and WhatsApp number in `lib/data.ts`; the course price in `lib/learn-data.ts`.
+- The lead trainer name printed on certificates is in `app/learn/certificate/page.tsx`.
+- Wording: "Certificate of Completion". Do not claim government or university accreditation.

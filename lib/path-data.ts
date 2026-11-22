@@ -1,60 +1,18 @@
 /* =====================================================================
    THE COURSE PATH: 12 weeks, 5 daily lessons per week + a weekly checkpoint.
-   Month 1 (weeks 1-4, 20 lessons) is fully written. Weeks 5-12 are listed
-   as "coming soon" so students can see the whole roadmap.
+   Month 1 (weeks 1-4) is in this file; Month 2 (weeks 5-8) is in path-month2.ts
+   and Month 3 (weeks 9-12) in path-month3.ts. Together they cover the full
+   grammar syllabus (see GRAMMAR_MAP in grammar-map.ts).
 
    A lesson = 5 steps: Warm-up -> Learn -> Try it -> Speak -> Finish.
    Add a lesson by copying one below. Practice items come in 3 kinds:
      choose (pick an option), type (fill the gap), order (build the sentence).
    Grammar lessons reuse vetted questions from lib/practice-data.ts via bank().
    ===================================================================== */
-import { TOPICS } from "./practice-data";
-
-export type Choose = { t: "choose"; id: string; q: string; options: string[]; answer: number; why: string; hint?: string };
-export type TypeIn = { t: "type"; id: string; q: string; answers: string[]; why: string; hint?: string };
-export type Order = { t: "order"; id: string; prompt: string; words: string[]; answers: string[]; why?: string };
-export type Say = { t: "say"; id: string; text: string; hint?: string };
-export type Item = Choose | TypeIn | Order | Say;
-export type Level = "beginner" | "intermediate";
-export type Goal = "everyday" | "work" | "interview" | "study";
-
-export type Card = { title: string; text: string; examples?: string[]; tip?: string };
-export type LessonKind = "Start here" | "Grammar" | "Speaking" | "Vocabulary" | "Conversation" | "Project";
-export type Lesson = {
-  id: string; day: number; week: number; title: string; kind: LessonKind; goal: string; minutes: number;
-  warm: { phrase: string; meaning: string; example: string };
-  learn: Card[]; practice: Item[];
-  speak: { prompt: string; model: string; checklist: string[]; check?: { minWords: number; mustInclude?: string[] } };
-  recap: string[];
-  levels?: Level[]; // omit = for everyone. ["beginner"] = skipped for intermediate students.
-  goals?: Goal[];   // shown as "recommended for your goal"
-};
-export type Week = {
-  n: number; month: number; title: string; theme: string; comingSoon?: boolean;
-  lessons: Lesson[]; checkpoint: { id: string; title: string };
-};
-
-/* ---------------- helpers ---------------- */
-let seed = 7;
-const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
-function shuffle<T>(arr: T[], key: string): T[] {
-  seed = [...key].reduce((n, c) => (n * 31 + c.charCodeAt(0)) % 233280, 11);
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  if (a.length > 1 && a.every((w, i) => w === arr[i])) a.push(a.shift() as T);
-  return a;
-}
-/** Questions from the grammar bank (practice-data.ts) by topic and 1-based number. */
-const bank = (topic: string, nums: number[]): Item[] => {
-  const t = TOPICS.find((x) => x.id === topic);
-  if (!t) throw new Error("unknown topic " + topic);
-  return nums.map((n) => { const q = t.questions[n - 1]; return { t: "choose", id: q.id, q: q.q, options: q.options, answer: q.answer, why: q.why } as Choose; });
-};
-const choose = (id: string, q: string, options: string[], answer: number, why: string, hint?: string): Choose => ({ t: "choose", id, q, options, answer, why, hint });
-const type = (id: string, q: string, answers: string[], why: string, hint?: string): TypeIn => ({ t: "type", id, q, answers, why, hint });
-const order = (id: string, prompt: string, sentence: string, extra: string[] = [], alts: string[] = []): Order => ({
-  t: "order", id, prompt, words: shuffle([...sentence.split(" "), ...extra], id), answers: [sentence, ...alts],
-});
+import { bank, choose, order, type, type Card, type Goal, type Lesson, type Level, type Say, type Week } from "./path-helpers";
+import { M2_WEEKS } from "./path-month2";
+import { M3_WEEKS } from "./path-month3";
+export type { Card, Choose, Goal, Item, Lesson, LessonKind, Level, Order, Say, TypeIn, Week } from "./path-helpers";
 
 /* ================= WEEK 1 : START HERE ================= */
 const w1: Lesson[] = [
@@ -118,9 +76,9 @@ const w1: Lesson[] = [
     goal: "Choose the right article without stopping to think.",
     warm: { phrase: "Could you pass me the salt, please?", meaning: "A polite request. Both people know which salt you mean.", example: "Could you pass me the salt, please?" },
     learn: [
-      { title: "A or an: listen to the sound", text: "Use 'an' before a vowel sound and 'a' before a consonant sound. The spelling does not decide it; the sound does.", examples: ["an engineer, an hour", "a university, a house"] },
-      { title: "The: when it is specific", text: "Use 'the' when you and the listener both know which one you mean, or when you mention it for a second time.", examples: ["I saw a film. The film was great.", "Please close the door."] },
-      { title: "No article", text: "Do not use an article for ideas in general, or for school, college and work as activities.", examples: ["Honesty is important.", "My children go to school."], tip: "Instruments take 'the': the guitar, the piano." },
+      { title: "A or an: listen to the sound", text: "Use 'an' before a vowel sound and 'a' before a consonant sound. The spelling does not decide it; the sound does.", rule: "*a* + consonant sound · *an* + vowel sound", examples: ["*an* engineer, *an* hour (the h is silent)", "*a* university, *a* house (you hear y and h)", "*an* MBA, *an* honest man"], pairs: [["She is engineer.", "She is *an* engineer."], ["I waited for a hour.", "I waited for *an* hour."]] },
+      { title: "The: when it is specific", text: "Use 'the' when you and the listener both know which one you mean, when you mention it a second time, or when there is only one.", rule: "*the* + the one we both know", examples: ["I saw *a* film. *The* film was great.", "Please close *the* door.", "*The* sun rises in *the* east."], pairs: [["Sun is very hot today.", "*The* sun is very hot today."]] },
+      { title: "No article", text: "Do not use an article for ideas in general, for plural and uncountable things in general, or for school, college and work as activities.", rule: "general idea → no article", examples: ["Honesty is important.", "I like dogs.", "My children go to school."], pairs: [["The life is beautiful.", "Life is beautiful."], ["He is a good in maths.", "He is good at maths."]], tip: "Instruments take 'the': the guitar, the piano." },
     ],
     practice: [
       ...bank("articles", [1, 3]),
@@ -440,35 +398,41 @@ const SAY: Record<string, string[]> = {
   d09: ["Where do you live?"], d12: ["Guess what happened yesterday."], d14: ["Go straight and turn left at the signal."],
   d17: ["That sounds interesting!"], d18: ["Hello, this is Rohan speaking."], d19: ["I'll get back to you tomorrow."],
 };
-const decorate = (ls: Lesson[]): Lesson[] => ls.map((l) => ({
+/* Rule lines and common-mistake pairs for the Month 1 grammar cards (by lesson id and card position). */
+type CardExtra = Pick<Card, "rule" | "pairs">;
+const CARD_EXTRAS: Record<string, (CardExtra | undefined)[]> = {
+  d03: [{ rule: "habits and facts → present simple" }, { rule: "I / you / we / they *work* · he / she / it *works*", pairs: [["He go to office.", "He *goes* to office."]] }, { rule: "*do / does* + subject + base verb", pairs: [["Does she likes tea?", "Does she *like* tea?"], ["He don't like coffee.", "He *doesn't* like coffee."]] }],
+  d06: [{ rule: "*am / is / are* + verb*-ing*", pairs: [["I am study now.", "I am *studying* now."]] }, { rule: "every day → *I drink* · now → *I am drinking*" }, { rule: "know, want, like, own → no *-ing*", pairs: [["I am knowing him.", "I *know* him."], ["I am having a car.", "I *have* a car."]] }],
+  d07: [{ rule: "one → *is* · more than one → *are*", pairs: [["The books is on the table.", "The books *are* on the table."]] }, { pairs: [["Everyone are ready.", "Everyone *is* ready."], ["The news are good.", "The news *is* good."]] }, { rule: "he / she / it *does* · I / you / we / they *do*", pairs: [["She don't know.", "She *doesn't* know."]] }],
+  d08: [{ rule: "*at* 5 pm · *on* Monday · *in* June", pairs: [["on the morning", "*in* the morning"], ["in Monday", "*on* Monday"]] }, { rule: "*at* a point · *on* a surface · *in* a space" }, { pairs: [["good in maths", "good *at* maths"]] }],
+  d09: [{ rule: "question word + helper + subject + verb" }, { rule: "*do / does / did / is / can* + subject + verb?", pairs: [["Where you are going?", "Where *are you* going?"], ["Why you didn't come?", "Why *didn't you* come?"]] }, { rule: "Could you tell me where the station *is*?", pairs: [["Can you tell me where is the bank?", "Can you tell me where *the bank is*?"]] }],
+  d11: [{ rule: "verb + *-ed* for finished past actions" }, { pairs: [["I goed there.", "I *went* there."]] }, { rule: "*did* + base verb", pairs: [["Did you went?", "Did you *go*?"], ["I didn't saw him.", "I didn't *see* him."]] }],
+  d13: [{ rule: "*have / has* + past participle", pairs: [["I have went to Delhi.", "I have *been* to Delhi."]] }, undefined, { rule: "time given → past simple · no time → present perfect", pairs: [["I have seen him yesterday.", "I *saw* him yesterday."]] }],
+  d16: [{ rule: "*should* = advice · *must* = rule · *mustn't* = not allowed" }, { rule: "*might / may* = possible, not sure" }, { rule: "modal + base verb", pairs: [["He can swims.", "He can *swim*."], ["You should to go.", "You should *go*."]] }],
+  d19: [{ pairs: [["discuss about the plan", "*discuss* the plan"], ["return back the book", "*return* the book"], ["my cousin brother", "my *cousin*"]] }, { pairs: [["I will revert back.", "I'll *get back* to you."], ["She is out of station.", "She is out of *town*."], ["What is your good name?", "What's your *name*?"]] }, { pairs: [["Myself Rahul.", "*My name is* Rahul."]] }],
+};
+export const decorate = (ls: Lesson[]): Lesson[] => ls.map((l) => ({
   ...l, ...TAGS[l.id],
-  speak: { ...l.speak, check: CHECKS[l.id] },
+  learn: l.learn.map((c, i) => ({ ...CARD_EXTRAS[l.id]?.[i], ...c })),
+  speak: { ...l.speak, check: l.speak.check ?? CHECKS[l.id] },
   practice: [...l.practice, ...(SAY[l.id] ?? []).map((text, n): Say => ({ t: "say", id: `${l.id}-s${n + 1}`, text }))],
 }));
 
 /* ---------------- assemble weeks ---------------- */
-const mk = (n: number, month: number, title: string, theme: string, lessons: Lesson[]): Week => ({
+export const mk = (n: number, month: number, title: string, theme: string, lessons: Lesson[]): Week => ({
   n, month, title, theme, lessons: decorate(lessons), checkpoint: { id: `cp${n}`, title: `Week ${n} Checkpoint` },
 });
-const soon = (n: number, month: number, title: string, theme: string): Week => ({ n, month, title, theme, comingSoon: true, lessons: [], checkpoint: { id: `cp${n}`, title: `Week ${n} Checkpoint` } });
 
 export const WEEKS: Week[] = [
   mk(1, 1, "Start Here", "Confidence and the basics", w1),
   mk(2, 1, "Build Your Sentences", "Core grammar for speaking", w2),
   mk(3, 1, "Past and Experience", "Tell stories and share experiences", w3),
   mk(4, 1, "Real Conversations", "Everyday situations", w4),
-  soon(5, 2, "Pronunciation That Gets You Understood", "Sounds, stress and endings"),
-  soon(6, 2, "Fluency and Listening", "Speak smoothly and follow fast English"),
-  soon(7, 2, "Everyday Conversations", "Shopping, travel, social situations"),
-  soon(8, 2, "Work English", "Emails, calls and meetings"),
-  soon(9, 3, "Public Speaking Basics", "Beat nerves and structure a talk"),
-  soon(10, 3, "Interview Skills", "Answer tough questions with confidence"),
-  soon(11, 3, "Presentations and Discussions", "Present ideas and join group talks"),
-  soon(12, 3, "Final Showcase", "Your finishing talk and certificate"),
+  ...[...M2_WEEKS, ...M3_WEEKS].map((w) => ({ ...w, lessons: decorate(w.lessons) })),
 ];
 export const MONTHS = [
   { n: 1, title: "Month 1: Foundations" },
-  { n: 2, title: "Month 2: Fluency" },
+  { n: 2, title: "Month 2: Richer Sentences" },
   { n: 3, title: "Month 3: Professional English" },
 ];
 export const FREE_WEEKS = 1; // week 1 is free to try; the rest unlock on enrolment

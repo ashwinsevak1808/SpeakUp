@@ -9,14 +9,15 @@ export function useNow(ms = 15000) {
   return now;
 }
 
-/** Sessions from the backend, refreshed every 30 seconds so a trainer's "Go live" shows up quickly. */
+/** Sessions from the backend, refreshed every 30 seconds so a trainer's "Go live" shows up quickly.
+ *  The server knows who is asking (login cookie); userId only restarts the feed when the account changes. */
 export function useSessions(userId: string | null) {
   const [sessions, setSessions] = useState<SessionView[] | null>(null);
   const [error, setError] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
     let alive = true;
-    const load = () => fetch(`/api/sessions${userId ? `?userId=${encodeURIComponent(userId)}` : ""}`, { cache: "no-store" })
+    const load = () => fetch("/api/sessions", { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d: { sessions: SessionView[] }) => { if (alive) { setSessions(d.sessions); setError(false); } })
       .catch(() => { if (alive) setError(true); });

@@ -7,21 +7,21 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="hidden flex-col justify-between bg-gradient-to-br from-accent-50 via-white to-accent-100/70 p-12 lg:flex">
         <Logo />
         <div>
-          <h2 className="font-display text-4xl font-bold leading-tight text-brand-900">Practise English every day. Get certified in 3 months.</h2>
+          <h2 className="font-display text-4xl font-bold leading-tight text-brand-900">Learn English with SpeakUp.</h2>
           <ul className="mt-8 space-y-3 text-brand-600">
-            {["Live online classes with real trainers", "Grammar practice with instant feedback", "Track your streak and progress", "Certificate of Completion"].map((t) => (
+            {["Every lesson free until 28 February 2027", "Grammar practice with instant feedback", "Speaking checks in every lesson", "Live online classes with skilled trainers"].map((t) => (
               <li key={t} className="flex gap-3"><span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />{t}</li>
             ))}
           </ul>
         </div>
-        <p className="text-sm text-brand-500">Mumbai · Online</p>
+        <p className="text-sm text-brand-500">100% online</p>
       </div>
       <div className="flex flex-col justify-center px-6 py-12 sm:px-14">
         <div className="mx-auto w-full max-w-md">
           <div className="mb-8 lg:hidden"><Logo /></div>
           {children}
-          <p className="mt-8 rounded-md bg-brand-50 p-3 text-xs leading-relaxed text-brand-800">
-            Demo mode: accounts are saved only in this browser for now. Cloud accounts will be connected before launch.
+          <p className="mt-8 text-xs leading-relaxed text-muted">
+            Your progress is saved to your account, so you can continue on any phone or computer. Trainers log in here too.
           </p>
           <Link href="/" className="mt-6 inline-block text-sm text-muted hover:text-brand-800">← Back to website</Link>
         </div>

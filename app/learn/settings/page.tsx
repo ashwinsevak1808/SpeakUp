@@ -56,7 +56,7 @@ export default function SettingsPage() {
       <PageTitle title="Settings" text="Your profile, how the course is shaped, and the voice that reads to you. Changes save automatically.">
         <div className="flex items-center gap-3 rounded-xl bg-white px-3 py-2 shadow-[var(--shadow-card)]">
           <Avatar name={user.name} photo={profile.photo} avatar={profile.avatar} size={36} />
-          <div className="min-w-0"><div className="ty-subject ty-ink truncate">{user.name}</div><div className="ty-note ty-muted truncate">{user.enrolled ? "Enrolled student" : "Free preview"}</div></div>
+          <div className="min-w-0"><div className="ty-subject ty-ink truncate">{user.name}</div><div className="ty-note ty-muted truncate">{user.enrolled ? "Full plan" : "Free"}</div></div>
         </div>
       </PageTitle>
 
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             <Section title="Account">
               <Row label="Name">{user.name}</Row>
               <Row label="Email">{user.email}</Row>
-              <Row label="Plan" hint="Your access to live classes and the full path">{user.enrolled ? "Enrolled student" : "Free preview"}</Row>
+              <Row label="Plan" hint="Your access to live classes and the full path">{user.enrolled ? "Full plan" : "Free"}</Row>
             </Section>
           </>
         )}

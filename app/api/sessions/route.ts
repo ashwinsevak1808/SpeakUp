@@ -1,24 +1,27 @@
 import { NextResponse } from "next/server";
-import { isTrainer } from "@/lib/server/trainer-auth";
-import { expand, loadSessions, mutateSessions, toView, validateSession, type SessionInput } from "@/lib/server/sessions";
+import { requireUser } from "@/lib/server/guard";
+import { SESSION_SELECT, expand, toView, validateSession, type SessionInput, type SessionRow } from "@/lib/server/sessions";
+import { isStaffRole } from "@/lib/supabase/server";
 
-/** Students: GET /api/sessions?userId=... Trainers (cookie): full details. */
-export async function GET(req: Request) {
-  const userId = new URL(req.url).searchParams.get("userId");
-  const trainer = await isTrainer();
-  const all = await loadSessions();
-  const from = Date.now() - 36 * 3600000; // keep the list short: from yesterday onwards (trainers see 30 days back)
-  const since = trainer ? Date.now() - 30 * 86400000 : from;
-  return NextResponse.json({ sessions: all.filter((s) => +new Date(s.start) >= since).map((s) => toView(s, userId, trainer)) });
+/** Signed-in people: the schedule. The database hides links and bookings the caller may not see. */
+export async function GET() {
+  const g = await requireUser(); if (g.error) return g.error;
+  const staff = isStaffRole(g.me.role);
+  const since = new Date(Date.now() - (staff ? 30 * 86400000 : 36 * 3600000)).toISOString();
+  const { data, error } = await g.sb.from("sessions").select(SESSION_SELECT).gte("start_at", since).order("start_at").limit(1000);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ sessions: (data as SessionRow[]).map((r) => toView(r, g.me.id)) });
 }
 
-/** Trainer only: create one session, or a repeating series (daily / weekdays / weekly). */
+/** Staff: create one session, or a repeating series (daily / weekdays / weekly). */
 export async function POST(req: Request) {
-  if (!(await isTrainer())) return NextResponse.json({ error: "Trainer sign-in required." }, { status: 401 });
+  const g = await requireUser(true); if (g.error) return g.error;
   const body = (await req.json().catch(() => ({}))) as SessionInput;
   const errs = validateSession(body, true);
   if (errs.length) return NextResponse.json({ errors: errs }, { status: 422 });
-  const made = expand(body);
-  await mutateSessions((all) => { all.push(...made); });
-  return NextResponse.json({ created: made.length });
+  const { rows, links } = expand(body, g.me.id);
+  const a = await g.sb.from("sessions").insert(rows);
+  if (a.error) return NextResponse.json({ error: a.error.message }, { status: 500 });
+  if (links.length) { const b = await g.sb.from("session_links").insert(links); if (b.error) return NextResponse.json({ error: b.error.message }, { status: 500 }); }
+  return NextResponse.json({ created: rows.length });
 }

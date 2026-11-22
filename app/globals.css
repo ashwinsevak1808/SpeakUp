@@ -45,68 +45,70 @@
    ringed by a hairline, one rationed indigo accent, Inter, tabular figures.
    brand-* become Neemo's neutral ink ramp; accent-* becomes the indigo ramp. */
 .app-theme {
+  /* ONE accent: the SpeakUp brand green. EDIT these to re-colour the student and trainer areas. */
   --canvas: #fafafa;
   --surface: #ffffff;
-  --surface-subtle: #f9f9fb;
-  --surface-hover: #f4f4f7;
-  --surface-sunken: #f0f1f5;
-  --border: #e3e4eb;
-  --border-strong: #cacbd8;
-  --border-accent: #c7c9fa;
-  --text-primary: #11111f;
-  --text-secondary: #4b4d65;
-  --text-muted: #5a5c78;
-  --text-subtle: #666887;
+  --surface-subtle: #fafbfa;
+  --surface-hover: #f4f6f5;
+  --surface-sunken: #eff2f0;
+  --border: #e3e7e4;
+  --border-strong: #cbd2cd;
+  --border-accent: #b7d6c3;
+  --text-primary: #131a16;
+  --text-secondary: #3d4741;
+  --text-muted: #59645d;
+  --text-subtle: #6b766f;
   --text-on-accent: #ffffff;
-  --accent: #6366f1;
-  --accent-hover: #5254e0;
-  --accent-active: #4547cc;
-  --accent-text: #4547cc;
-  --accent-subtle: #eeeffe;
-  --accent-muted: #d4d5fb;
-  --accent-soft: #a5b4fc;
-  --accent-ring: color-mix(in srgb, #6366f1 18%, transparent);
-  --success: #0f7a58;
-  --success-subtle: #e5f4ef;
-  --warning: #9e5a00;
-  --warning-subtle: #fdf3e5;
-  --warning-border: #f3d9b1;
-  --danger: #c12b42;
-  --danger-subtle: #fdecef;
-  --info: #2457c8;
-  --info-subtle: #ebf1fd;
+  --accent: #1f7249;
+  --accent-hover: #175c3b;
+  --accent-active: #124a31;
+  --accent-text: #175c3b;
+  --accent-subtle: #edf6f0;
+  --accent-muted: #c3dfce;
+  --accent-soft: #94c6a9;
+  --accent-ring: color-mix(in srgb, #1f7249 16%, transparent);
+  /* status colours collapse onto the accent so the app stays one-colour; red is kept only for errors */
+  --success: #1f7249;
+  --success-subtle: #edf6f0;
+  --warning: #59645d;
+  --warning-subtle: #eff2f0;
+  --warning-border: #cbd2cd;
+  --danger: #b42318;
+  --danger-subtle: #fdf1f0;
+  --info: #175c3b;
+  --info-subtle: #edf6f0;
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 14px;
-  --shadow-card: 0 0 0 1px var(--border), 0 1px 2px rgba(17, 17, 31, 0.04);
-  --shadow-pop: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(17, 17, 31, 0.16);
+  --shadow-card: 0 0 0 1px var(--border), 0 1px 2px rgba(19, 26, 22, 0.04);
+  --shadow-pop: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(19, 26, 22, 0.16);
 
-  --color-brand-50: #f9f9fb;
-  --color-brand-100: #f0f1f5;
-  --color-brand-200: #e3e4eb;
-  --color-brand-300: #cacbd8;
-  --color-brand-400: #8b8da6;
-  --color-brand-500: #666887;
-  --color-brand-600: #5a5c78;
-  --color-brand-700: #4b4d65;
-  --color-brand-800: #24253a;
-  --color-brand-900: #11111f;
-  --color-brand-950: #0a0a14;
-  --color-ink: #11111f;
-  --color-muted: #5a5c78;
-  --color-line: #e3e4eb;
-  --color-ok: #0f7a58;
-  --color-live: #c12b42;
-  --color-accent-50: #eeeffe;
-  --color-accent-100: #e2e3fd;
-  --color-accent-200: #d4d5fb;
-  --color-accent-300: #a5b4fc;
-  --color-accent-400: #818cf8;
-  --color-accent-500: #6366f1;
-  --color-accent-600: #6366f1;
-  --color-accent-700: #4547cc;
-  --color-accent-800: #3a3cb0;
+  --color-brand-50: #fafbfa;
+  --color-brand-100: #eff2f0;
+  --color-brand-200: #e3e7e4;
+  --color-brand-300: #cbd2cd;
+  --color-brand-400: #8c968f;
+  --color-brand-500: #6b766f;
+  --color-brand-600: #59645d;
+  --color-brand-700: #3d4741;
+  --color-brand-800: #232b26;
+  --color-brand-900: #131a16;
+  --color-brand-950: #0b100d;
+  --color-ink: #131a16;
+  --color-muted: #59645d;
+  --color-line: #e3e7e4;
+  --color-ok: #1f7249;
+  --color-live: #1f7249;
+  --color-accent-50: #edf6f0;
+  --color-accent-100: #dcede3;
+  --color-accent-200: #c3dfce;
+  --color-accent-300: #94c6a9;
+  --color-accent-400: #5ea67f;
+  --color-accent-500: #2f8a5e;
+  --color-accent-600: #1f7249;
+  --color-accent-700: #175c3b;
+  --color-accent-800: #124a31;
   --font-heading: var(--font-body);
   background: var(--canvas);
   color: var(--text-primary);
@@ -161,7 +163,7 @@
 .btn-tertiary:hover { color: var(--text-primary); background: var(--surface-hover); box-shadow: inset 0 0 0 1px var(--border-strong); }
 .btn-ghost { color: var(--text-muted); background: transparent; }
 .btn-ghost:hover { color: var(--text-primary); background: var(--surface-hover); }
-.btn-danger { color: #fff; background: linear-gradient(180deg, #d23a52 0%, var(--danger) 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 2px rgba(16,24,40,.16); }
+.btn-danger { color: #fff; background: var(--danger); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 2px rgba(16,24,40,.16); }
 .btn-danger:hover { background: var(--danger); }
 
 /* ---- Surfaces ---- */

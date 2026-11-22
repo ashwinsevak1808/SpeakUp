@@ -35,7 +35,7 @@ export const startsInMin = (s: Session, now = new Date()) => Math.round((+new Da
 export const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: TZ }).replace(" am", " AM").replace(" pm", " PM");
 export const fmtDate = (iso: string, o: Intl.DateTimeFormatOptions = { weekday: "short", day: "numeric", month: "short" }) => new Date(iso).toLocaleDateString("en-IN", { ...o, timeZone: TZ });
 export const dayKey = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { timeZone: TZ }); // YYYY-MM-DD in India time
-export const KIND_LABEL: Record<SessionKind, string> = { group: "Live class", private: "Private session", inperson: "Mumbai in-person" };
+export const KIND_LABEL: Record<SessionKind, string> = { group: "Live class", private: "Private session", inperson: "In-person (not offered)" };
 
 /** "Starts in 2h 15m", "Starts in 12 min", "Live now", "Ended". */
 export function countdown(s: Session, now = new Date()) {

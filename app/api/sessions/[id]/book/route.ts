@@ -1,35 +1,28 @@
 import { NextResponse } from "next/server";
-import { mutateSessions } from "@/lib/server/sessions";
+import { requireUser } from "@/lib/server/guard";
+import { alertTeam } from "@/lib/server/notify";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Student books a private slot. (Demo: payment is simulated in the browser; connect Razorpay before launch.) */
-export async function POST(req: Request, { params }: Ctx) {
+/** Student books a private slot (the database locks the slot so it can only be booked once).
+ *  Payment is not taken yet: connect Razorpay here before charging for sessions. */
+export async function POST(_req: Request, { params }: Ctx) {
+  const g = await requireUser(); if (g.error) return g.error;
   const { id } = await params;
-  const { userId, name, email } = (await req.json().catch(() => ({}))) as { userId?: string; name?: string; email?: string };
-  if (!userId || !name || !email) return NextResponse.json({ error: "Missing student details." }, { status: 400 });
-  const result = await mutateSessions((all) => {
-    const s = all.find((x) => x.id === id);
-    if (!s || s.kind !== "private") return "missing" as const;
-    if (+new Date(s.start) < Date.now()) return "past" as const;
-    if (s.booked) return "taken" as const;
-    s.booked = { userId, name, email, at: new Date().toISOString() };
-    return "ok" as const;
-  });
-  const map = { ok: [200, "Booked."], missing: [404, "Slot not found."], past: [409, "That slot has already started."], taken: [409, "Someone just booked that slot. Please choose another."] } as const;
-  return NextResponse.json(result === "ok" ? { ok: true } : { error: map[result][1] }, { status: map[result][0] });
+  const { data, error } = await g.sb.rpc("book_session", { p_id: id });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const map: Record<string, [number, string]> = { ok: [200, "Booked."], missing: [404, "Slot not found."], past: [409, "That slot has already started."], taken: [409, "Someone just booked that slot. Please choose another."], auth: [401, "Please log in."], pay: [402, "Please pay to book this slot."] };
+  const [status, msg] = map[data as string] ?? [500, "Could not book."];
+  if (status === 200) await alertTeam(`Private session booked by ${g.me.name}`, [`${g.me.name} (${g.me.email}) booked slot ${id}.`, "Collect the payment and check the Meet link."], "/admin/bookings");
+  return NextResponse.json(status === 200 ? { ok: true } : { error: msg }, { status });
 }
 
-/** Student cancels their own booking (up to 2 hours before the start). */
-export async function DELETE(req: Request, { params }: Ctx) {
+/** Student cancels their own booking (up to 2 hours before). Staff can cancel any booking. */
+export async function DELETE(_req: Request, { params }: Ctx) {
+  const g = await requireUser(); if (g.error) return g.error;
   const { id } = await params;
-  const { userId } = (await req.json().catch(() => ({}))) as { userId?: string };
-  const result = await mutateSessions((all) => {
-    const s = all.find((x) => x.id === id);
-    if (!s || !s.booked || s.booked.userId !== userId) return "missing" as const;
-    if (+new Date(s.start) - Date.now() < 2 * 3600000) return "late" as const;
-    s.booked = null; return "ok" as const;
-  });
-  if (result === "ok") return NextResponse.json({ ok: true });
-  return NextResponse.json({ error: result === "late" ? "You can cancel up to 2 hours before the session." : "Booking not found." }, { status: result === "late" ? 409 : 404 });
+  const { data, error } = await g.sb.rpc("cancel_booking", { p_id: id });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (data === "ok") return NextResponse.json({ ok: true });
+  return NextResponse.json({ error: data === "late" ? "You can cancel up to 2 hours before the session." : "Booking not found." }, { status: data === "late" ? 409 : 404 });
 }

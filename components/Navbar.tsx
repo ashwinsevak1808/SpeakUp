@@ -2,15 +2,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Menu, X, Phone, Mail } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { NAV_MAIN, NAV_MORE, SITE } from "@/lib/data";
+import { FREE_UNTIL_LABEL } from "@/lib/access";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 
 export function Logo({ light }: { light?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITE.name} home`}>
-      <span className="logo-mark grid h-9 w-9 place-items-center rounded-md bg-brand-700 font-display text-sm font-bold text-white">YE</span>
+      <span className="logo-mark grid h-9 w-9 place-items-center rounded-md bg-brand-700 font-display text-sm font-bold text-white">SU</span>
       <span className={cn("font-display text-lg font-bold tracking-tight", light ? "text-white" : "text-brand-900")}>{SITE.name}</span>
     </Link>
   );
@@ -49,16 +50,13 @@ export function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-white shadow-[0_1px_0_var(--color-line)]">
-      {/* Utility bar */}
-      <div className="hidden bg-brand-900 text-[13px] text-brand-100 md:block">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-2">
-          <span>{SITE.hours}</span>
-          <div className="flex items-center gap-6">
-            <a href={`tel:${SITE.phoneRaw}`} className="flex items-center gap-2 hover:text-white"><Phone className="h-3.5 w-3.5" aria-hidden />{SITE.phone}</a>
-            <a href={`mailto:${SITE.email}`} className="flex items-center gap-2 hover:text-white"><Mail className="h-3.5 w-3.5" aria-hidden />{SITE.email}</a>
-          </div>
-        </div>
-      </div>
+      {/* Announcement banner */}
+      <Link href={authed ? "/learn" : "/signup"} className="block h-9 bg-brand-800 text-[13px] text-white transition-colors hover:bg-brand-900">
+        <span className="mx-auto flex h-full max-w-6xl items-center justify-center gap-2 px-4 text-center">
+          <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider">Free</span>
+          <span className="truncate"><span className="hidden sm:inline">Every lesson and test is free until {FREE_UNTIL_LABEL}. </span><span className="sm:hidden">All lessons free till 28 Feb 2027. </span><b className="underline underline-offset-2">{authed ? "Go to my dashboard" : "Register for free"} →</b></span>
+        </span>
+      </Link>
 
       <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between px-5 sm:px-8">
         <Logo />
@@ -93,7 +91,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           {!authed && <Link href="/login" className="hidden px-3 py-2 text-[15px] font-medium text-ink hover:text-brand-700 sm:inline-block">Log in</Link>}
           <Link href={authed ? "/learn" : "/signup"} className="hidden rounded-md bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800 sm:inline-block">
-            {authed ? "My Dashboard" : "Start Free"}
+            {authed ? "My Dashboard" : "Register Free"}
           </Link>
           <button onClick={() => setOpen((o) => !o)} aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} className="grid h-11 w-11 place-items-center text-brand-900 lg:hidden">
             {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -102,7 +100,7 @@ export function Navbar() {
       </div>
 
       {open && (
-        <div className="fixed inset-x-0 bottom-0 top-[68px] z-40 overflow-y-auto bg-white px-5 pb-10 pt-4 lg:hidden">
+        <div className="fixed inset-x-0 bottom-0 top-[104px] z-40 overflow-y-auto bg-white px-5 pb-10 pt-4 lg:hidden">
           <ul className="divide-y divide-line">
             {[...NAV_MAIN, ...NAV_MORE].map((l) => (
               <li key={l.href}>
@@ -111,7 +109,7 @@ export function Navbar() {
             ))}
           </ul>
           <div className="mt-6 grid gap-3">
-            <Link href={authed ? "/learn" : "/signup"} className="block rounded-md bg-brand-700 py-3.5 text-center font-semibold text-white">{authed ? "My Dashboard" : "Start Free"}</Link>
+            <Link href={authed ? "/learn" : "/signup"} className="block rounded-md bg-brand-700 py-3.5 text-center font-semibold text-white">{authed ? "My Dashboard" : "Register for free"}</Link>
             {!authed && <Link href="/login" className="block rounded-md border border-brand-700 py-3.5 text-center font-semibold text-brand-700">Log in</Link>}
           </div>
         </div>

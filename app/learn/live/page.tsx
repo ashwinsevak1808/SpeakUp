@@ -1,11 +1,12 @@
 "use client";
+/** Live classes, in the dashboard layout: page head · calendar + day agenda · next-class aside. */
 import { useMemo, useState } from "react";
-import { Lock, Video } from "@/components/learn/icons";
+import { CalendarDays, Lock, Video } from "@/components/learn/icons";
 import { useAuth } from "@/lib/auth";
 import { KIND_LABEL, countdown, dayKey, fmtDate, fmtTime, isLive, isPast } from "@/lib/live";
-import { Card, PageTitle } from "@/components/learn/ui";
+import { Button, Card, PageTitle, btn } from "@/components/learn/ui";
 import { EnrolDialog } from "@/components/learn/EnrolDialog";
-import { Calendar, EmptyDay, LiveBadge, SessionCard, liveNow } from "@/components/learn/live";
+import { Avatar, Calendar, EmptyDay, LiveBadge, SessionCard, liveNow } from "@/components/learn/live";
 import { useLive } from "@/components/learn/LiveProvider";
 
 export default function LivePage() {
@@ -20,45 +21,67 @@ export default function LivePage() {
   if (!user) return null;
   const live = liveNow(sessions, now);
   const next = mineOrGroup.filter((s) => !isPast(s, now) && !isLive(s, now)).sort((a, b) => +new Date(a.start) - +new Date(b.start))[0];
+  const thisWeek = mineOrGroup.filter((s) => !isPast(s, now) && +new Date(s.start) < +now + 7 * 86400000).length;
 
   return (
-    <>
-      <PageTitle title="Live Classes" text="Classes run every day on Google Meet. Your trainers set the schedule and share the join link here. All times are India time." />
-      {next && live.length === 0 && (
-        <div className="mb-6 flex flex-wrap items-center gap-5 rounded-[var(--radius-xl)] p-5 text-white shadow-[var(--shadow-card)] sm:p-6" style={{ background: "linear-gradient(120deg, #4547cc 0%, #6366f1 55%, #8b5cf6 100%)" }}>
-          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/15"><Video className="h-7 w-7" /></span>
-          <div className="min-w-[200px] flex-1">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-white/75">Next class · {KIND_LABEL[next.kind]}</div>
-            <div className="mt-1 text-xl font-semibold">{next.title}</div>
-            <div className="mt-0.5 text-sm text-white/85">with {next.trainer} · {fmtDate(next.start)}, {fmtTime(next.start)} · {next.minutes} min</div>
-          </div>
-          <div className="rounded-xl bg-white/15 px-4 py-2 text-center"><div className="text-[11px] font-semibold uppercase tracking-wide text-white/75">Starts</div><div className="text-base font-semibold">{countdown(next, now).replace(/^Starts /, "")}</div></div>
-        </div>
-      )}
+    <div className="nx-page">
+      <PageTitle eyebrow="All times are India time (IST)" title="Live classes" text="Classes run every day on Google Meet. Your trainers set the schedule and share the join link here.">
+        {!user.enrolled && <Button onClick={() => setDialog(true)} icon={Lock}>Pay ₹3,000 to join classes</Button>}
+      </PageTitle>
+
       {live.length > 0 && (
-        <div className="mb-6 rounded-xl border border-live/30 bg-red-50 p-4"><div className="flex flex-wrap items-center gap-3"><LiveBadge /><span className="font-display font-semibold text-brand-900">{live[0].title}</span><span className="text-sm text-muted">with {live[0].trainer} is on right now</span></div></div>
-      )}
-      {!user.enrolled && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 nx-card p-4 text-sm">
-          <span className="flex items-center gap-2 text-brand-900"><Lock className="h-4 w-4" />Enrol to get the Google Meet link for every live class.</span>
-          <button onClick={() => setDialog(true)} className="rounded-lg bg-accent-600 px-5 py-2 font-semibold text-white hover:bg-accent-700">Enrol now</button>
+        <div className="nx-glass flex flex-wrap items-center gap-3 p-4">
+          <LiveBadge /><span className="ty-subject ty-ink">{live[0].title}</span><span className="ty-body ty-muted">with {live[0].trainer} is on right now</span>
         </div>
       )}
-      {error && !loaded && <Card className="mb-6 text-sm text-muted">The class schedule could not be loaded. Check your connection and refresh.</Card>}
-      <div className="grid items-start gap-6 lg:grid-cols-[400px_1fr]">
-        <Calendar sessions={sessions} now={now} selected={selected} onSelect={setSelected} />
-        <div>
-          <h2 className="mb-3 font-display text-lg font-semibold text-brand-900">{selected === today ? "Today" : fmtDate(selected + "T12:00:00+05:30", { weekday: "long", day: "numeric", month: "long" })}</h2>
-          <div className="space-y-3">{day.length ? day.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} />) : <EmptyDay />}</div>
-          {upcoming.length > 0 && (
-            <>
-              <h2 className="mb-3 mt-8 font-display text-lg font-semibold text-brand-900">Coming up</h2>
-              <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} compact />)}</div>
-            </>
+      {error && !loaded && <Card className="ty-body ty-muted">The class schedule could not be loaded. Check your connection and refresh.</Card>}
+
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <aside aria-label="Class summary" className="flex min-w-0 flex-col gap-4 xl:order-2">
+          <Calendar sessions={sessions} now={now} selected={selected} onSelect={setSelected} />
+          {next && (
+            <section className="nx-card p-5">
+              <div className="flex items-center justify-between"><span className="ty-label ty-caps ty-subtle">Next class</span><span className="ty-label ty-caps ty-subtle">{KIND_LABEL[next.kind]}</span></div>
+              <div className="ty-figure ty-ink mt-3">{fmtTime(next.start)}</div>
+              <div className="ty-note ty-500 ty-accent mt-1">{countdown(next, now)}</div>
+              <div className="ty-subject ty-ink mt-3">{next.title}</div>
+              <div className="ty-note ty-muted mt-1 flex items-center gap-2"><Avatar name={next.trainer} size={20} />{next.trainer} · {fmtDate(next.start)} · {next.minutes} min</div>
+            </section>
           )}
+          <section className="nx-card p-5">
+            <div className="ty-subject ty-ink">How live classes work</div>
+            <dl className="nx-facts mt-2">
+              <div><dt>Where</dt><dd>Google Meet</dd></div>
+              <div><dt>How often</dt><dd>Every day</dd></div>
+              <div><dt>Next 7 days</dt><dd>{thisWeek} sessions</dd></div>
+              <div><dt>Your access</dt><dd>{user.enrolled ? "Join link shown" : "With the full plan"}</dd></div>
+            </dl>
+            <p className="ty-note ty-muted nx-dash-h mt-3 flex gap-2 pt-3"><Video className="mt-0.5 h-3.5 w-3.5 shrink-0" />Join 5 minutes early and keep your microphone on mute until you speak.</p>
+          </section>
+          {!user.enrolled && (
+            <section className="nx-glass p-5">
+              <CalendarDays className="h-5 w-5 text-[var(--accent)]" />
+              <div className="ty-subject ty-ink mt-2">Get the Meet link for every class</div>
+              <p className="ty-note ty-muted mt-1">With the full plan you see the join link here and can join any day.</p>
+              <button onClick={() => setDialog(true)} className={btn("primary", "md", "mt-3 w-full")}>Pay ₹3,000</button>
+            </section>
+          )}
+        </aside>
+        <div className="min-w-0 xl:order-1">
+          <div className="min-w-0">
+            <div className="mb-3 flex items-baseline justify-between"><h2 className="ty-head ty-ink">{selected === today ? "Today" : fmtDate(selected + "T12:00:00+05:30", { weekday: "long", day: "numeric", month: "long" })}</h2><span className="ty-note ty-subtle">{day.length} {day.length === 1 ? "session" : "sessions"}</span></div>
+            <div className="space-y-3">{day.length ? day.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} />) : <EmptyDay />}</div>
+            {upcoming.length > 0 && (
+              <>
+                <h2 className="ty-head ty-ink mb-3 mt-8">Coming up</h2>
+                <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} compact />)}</div>
+              </>
+            )}
+          </div>
         </div>
+
       </div>
       {dialog && <EnrolDialog userId={user.id} onClose={() => setDialog(false)} />}
-    </>
+    </div>
   );
 }

@@ -25,6 +25,8 @@ import { Avatar, LiveBadge, gcalLink, liveNow } from "@/components/learn/live";
 import { useLive } from "@/components/learn/LiveProvider";
 import { nodeHref } from "@/components/learn/LessonPlayer";
 import { cn } from "@/lib/utils";
+import { weekOpen } from "@/lib/access";
+import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
 
 const BADGE_ICON: Record<string, IconType> = { first: Footprints, streak3: Flame, week1: Flag, speaker: Mic, star: Star, streak7: Flame, month1: Medal, graduate: Trophy };
 const STEPS = ["Warm-up", "Learn", "Try it", "Speak", "Finish"];
@@ -36,7 +38,7 @@ export default function Dashboard() {
   const { user, progress, profile } = useAuth();
   const course = useCourse();
   const { sessions, now } = useLive();
-  const [dialog, setDialog] = useState(false);
+  const [dialog, setDialog] = useState<boolean | number>(false);
   const [tab, setTab] = useState<QueueTab>("all");
 
   const week = useMemo(() => {
@@ -52,7 +54,7 @@ export default function Dashboard() {
   const pct = (done / total) * 100;
   const earned = MILESTONES.filter((m) => m.earned(course, progress));
   const first = progress.done.length === 0;
-  const paywall = !!cur && cur.week > 1 && !enrolled;
+  const paywall = !!cur && !weekOpen(user, cur.week);
   const stepNow = cur && cur.kind === "lesson" ? Math.min(progress.steps[cur.id] ?? 0, 4) : 0;
   const hour = now.getHours(); const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const streak = streakOf(progress.days);
@@ -82,7 +84,7 @@ export default function Dashboard() {
   for (const s of upcoming.slice(0, 3)) {
     const isNow = isLive(s, now); const can = (s.kind === "group" && enrolled) || (s.kind === "private" && s.mine);
     rows.push({ id: s.id, tab: "classes", icon: s.kind === "private" ? UserRound : Video, avatar: s.trainer, kind: isNow ? "Live now" : KIND_LABEL[s.kind], meta: s.trainer, title: s.title, when: `${dayKey(s.start) === dayKey(now.toISOString()) ? "Today" : fmtDate(s.start)} · ${fmtTime(s.start)}`, live: isNow,
-      ...(isNow && can && s.link ? { cta: "Join", href: s.link, external: true } : s.kind === "group" && !enrolled ? { cta: "Enrol to join", onClick: () => setDialog(true) } : { cta: "Details", href: s.kind === "private" ? "/learn/private" : "/learn/live" }) });
+      ...(isNow && can && s.link ? { cta: "Join", href: s.link, external: true } : s.kind === "group" && !enrolled ? { cta: "Join with plan", onClick: () => setDialog(true) } : { cta: "Details", href: s.kind === "private" ? "/learn/private" : "/learn/live" }) });
   }
   for (const m of MILESTONES.filter((x) => !x.earned(course, progress)).slice(0, 2)) rows.push({ id: m.id, tab: "milestones", icon: BADGE_ICON[m.id] ?? Medal, kind: "Milestone", meta: "Not earned yet", title: `${m.title}: ${m.desc}`, cta: "View", href: "/learn/path" });
   const count = (t: QueueTab) => t === "all" ? rows.length : rows.filter((r) => r.tab === t).length;
@@ -104,13 +106,13 @@ export default function Dashboard() {
         </div>
         <div className="nx-pagehead__actions">
           <LinkButton href="/learn/live" variant="secondary" icon={CalendarDays}>Class schedule</LinkButton>
-          {cur && (paywall ? <Button onClick={() => setDialog(true)} icon={Lock}>Enrol to continue</Button> : <LinkButton href={nodeHref(cur)} icon={Play}>{ctaLabel}</LinkButton>)}
+          {cur && (paywall ? <Button onClick={() => setDialog(cur.week)} icon={Lock}>Unlock to continue</Button> : <LinkButton href={nodeHref(cur)} icon={Play}>{ctaLabel}</LinkButton>)}
         </div>
       </header>
 
       {/* small screens: the next live class sits up top (the full card is in the aside on wide screens) */}
       {nextClass && (
-        <Link href="/learn/live" className={cn("nx-card flex items-center gap-3 p-3.5 xl:hidden", live && "shadow-[0_0_0_1px_color-mix(in_srgb,var(--danger)_35%,transparent)]")}>
+        <Link href="/learn/live" className={cn("nx-card flex items-center gap-3 p-3.5 xl:hidden", live && "shadow-[0_0_0_1px_var(--border-accent)]")}>
           {live ? <LiveBadge /> : <span className="grid size-9 shrink-0 place-items-center rounded-[var(--radius-md)] bg-[var(--accent-subtle)] text-[var(--accent-text)]"><Video className="h-[18px] w-[18px]" /></span>}
           <span className="min-w-0 flex-1"><span className="ty-subject ty-ink block truncate">{nextClass.title}</span><span className="ty-note ty-muted block truncate">{live ? `Happening now · ${live.trainer}` : `${fmtTime(nextClass.start)} · ${countdown(nextClass, now)}`}</span></span>
           <ArrowRight className="h-4 w-4 shrink-0 text-[var(--text-subtle)]" />
@@ -164,7 +166,7 @@ export default function Dashboard() {
                 )}
 
                 <div className="nx-dash-h mt-5 flex flex-wrap items-center gap-3 pt-4">
-                  {paywall ? <Button onClick={() => setDialog(true)} icon={Lock}>Enrol to continue</Button> : <LinkButton href={nodeHref(cur)} icon={Play}>{ctaLabel}</LinkButton>}
+                  {paywall && cur ? <Button onClick={() => setDialog(cur.week)} icon={Lock}>Unlock to continue</Button> : <LinkButton href={nodeHref(cur)} icon={Play}>{ctaLabel}</LinkButton>}
                   <LinkButton href="/learn/path" variant="tertiary">View my path</LinkButton>
                   <span className="ty-note ty-subtle ml-auto hidden md:inline">Tip: press <kbd className="rounded border border-[var(--border)] bg-white px-1">⌘K</kbd> to jump to any lesson</span>
                 </div>
@@ -199,7 +201,7 @@ export default function Dashboard() {
                       </div>
                       <div className="flex shrink-0 items-center gap-3 self-end sm:self-auto">
                         {r.when && <span className="ty-note ty-mono ty-muted whitespace-nowrap">{r.when}</span>}
-                        <span className={cn("rounded-[var(--radius-md)] px-2.5 py-1 text-[12px] font-semibold transition-colors", r.live ? "bg-[var(--danger)] text-white" : "border border-[var(--border)] bg-white text-[var(--text-primary)] group-hover/row:border-[var(--border-accent)] group-hover/row:text-[var(--accent-text)]")}>{r.cta}</span>
+                        <span className={cn("rounded-[var(--radius-md)] px-2.5 py-1 text-[12px] font-semibold transition-colors", r.live ? "bg-[var(--accent)] text-white" : "border border-[var(--border)] bg-white text-[var(--text-primary)] group-hover/row:border-[var(--border-accent)] group-hover/row:text-[var(--accent-text)]")}>{r.cta}</span>
                       </div>
                     </>
                   );
@@ -220,7 +222,7 @@ export default function Dashboard() {
           <Panel title="Your path" desc={`${course.publishedWeeks} of ${course.totalWeeks} weeks published · ${done} of ${total} steps done`} action={<Link href="/learn/path" className="ty-body ty-500 ty-accent inline-flex items-center gap-1 hover:underline">Open<ArrowRight className="h-3.5 w-3.5" /></Link>}>
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {course.weeks.filter((w) => !w.comingSoon).slice(0, 4).map((w) => {
-                const wp = weekProgress(course, progress, w.n); const full = wp.total > 0 && wp.done === wp.total; const locked = w.n > 1 && !enrolled;
+                const wp = weekProgress(course, progress, w.n); const full = wp.total > 0 && wp.done === wp.total; const locked = !weekOpen(user, w.n);
                 const isCur = cur?.week === w.n;
                 return (
                   <Link key={w.n} href="/learn/path" className={cn("flex flex-col rounded-[var(--radius-lg)] border bg-white p-3.5 transition-colors hover:border-[var(--border-strong)]", isCur ? "border-[var(--border-accent)] shadow-[0_0_0_3px_var(--accent-ring)]" : "border-[var(--border)]")}>
@@ -256,16 +258,16 @@ export default function Dashboard() {
         {/* ================= aside ================= */}
         <aside aria-label="Summary" className="flex min-w-0 flex-col gap-4 xl:sticky xl:top-20">
           {/* live class */}
-          <section aria-label="Live class" className={cn("nx-card p-5", live && "shadow-[0_0_0_1px_color-mix(in_srgb,var(--danger)_35%,transparent),0_1px_2px_rgba(17,17,31,.04)]")}>
+          <section aria-label="Live class" className={cn("nx-card p-5", live && "shadow-[0_0_0_1px_var(--border-accent),0_1px_2px_rgba(17,17,31,.04)]")}>
             {live ? (
               <>
-                <div className="flex items-center gap-2"><LiveBadge /><span className="ty-note ty-500 text-[var(--danger)]">Happening now</span></div>
+                <div className="flex items-center gap-2"><LiveBadge /><span className="ty-note ty-500 text-[var(--accent-text)]">Happening now</span></div>
                 <h2 className="ty-head ty-ink mt-3">{live.title}</h2>
                 <div className="ty-body ty-muted mt-1.5 flex items-center gap-2"><Avatar name={live.trainer} size={22} />{live.trainer}</div>
                 {canJoinLive ? (
-                  <a href={live.link} target="_blank" rel="noopener noreferrer" className={btn("danger", "lg", "mt-4 w-full")}><Video className="h-4 w-4" />Join now on Google Meet</a>
+                  <a href={live.link} target="_blank" rel="noopener noreferrer" className={btn("primary", "lg", "mt-4 w-full")}><Video className="h-4 w-4" />Join now on Google Meet</a>
                 ) : (
-                  <button onClick={() => setDialog(true)} className={btn("secondary", "lg", "mt-4 w-full")}><Lock className="h-4 w-4" />Enrol to join</button>
+                  <button onClick={() => setDialog(true)} className={btn("secondary", "lg", "mt-4 w-full")}><Lock className="h-4 w-4" />Get the plan to join</button>
                 )}
               </>
             ) : nextClass ? (
@@ -279,7 +281,7 @@ export default function Dashboard() {
                   <LinkButton href="/learn/live" variant="secondary" size="sm" className="flex-1">Schedule</LinkButton>
                   <a href={gcalLink(nextClass, enrolled)} target="_blank" rel="noopener noreferrer" className={btn("ghost", "sm", "flex-1")}><CalendarPlus className="h-4 w-4" />Add to calendar</a>
                 </div>
-                {!enrolled && <p className="ty-note ty-muted mt-3">Enrol to get the Google Meet link.</p>}
+                {!enrolled && <p className="ty-note ty-muted mt-3">Get the full plan to receive the Google Meet link.</p>}
               </>
             ) : <EmptyState compact icon={CalendarDays} title="No class scheduled yet" text="Your trainers publish the schedule here." />}
           </section>
@@ -300,7 +302,7 @@ export default function Dashboard() {
               <Link href="/learn/path"><dt>Checkpoint stars</dt><dd>{stars}</dd></Link>
               <div><dt>Milestones</dt><dd>{earned.length} / {MILESTONES.length}</dd></div>
               <Link href="/learn/settings"><dt>Focus</dt><dd>{GOAL_LABEL[profile.goal]}</dd></Link>
-              <div><dt>Plan</dt><dd>{enrolled ? <Badge tone="success" className="!h-5">Enrolled</Badge> : <Badge tone="neutral" className="!h-5">Free preview</Badge>}</dd></div>
+              <div><dt>Plan</dt><dd>{enrolled ? <Badge tone="success" className="!h-5">Full plan</Badge> : <Badge tone="neutral" className="!h-5">Free</Badge>}</dd></div>
             </dl>
           </section>
 
@@ -316,7 +318,7 @@ export default function Dashboard() {
                       {list.slice(0, 3).map((s) => (
                         <li key={s.id}>
                           <Link href={s.kind === "private" ? "/learn/private" : "/learn/live"} className="flex items-center gap-2.5 rounded-[var(--radius-md)] p-2 hover:bg-[var(--surface-hover)]">
-                            <span className={cn("size-2 shrink-0 rounded-full", isLive(s, now) ? "bg-[var(--danger)]" : s.kind === "private" ? "border-2 border-[var(--accent)]" : "bg-[var(--accent)]")} />
+                            <span className={cn("size-2 shrink-0 rounded-full", isLive(s, now) ? "bg-[var(--accent)]" : s.kind === "private" ? "border-2 border-[var(--accent)]" : "bg-[var(--accent)]")} />
                             <span className="ty-body ty-ink min-w-0 flex-1 truncate">{s.title}</span>
                             <span className="ty-note ty-mono ty-muted shrink-0">{fmtTime(s.start)}</span>
                           </Link>
@@ -363,14 +365,14 @@ export default function Dashboard() {
           {!enrolled && (
             <section aria-label="Enrol" className="nx-glass p-5">
               <Award className="h-5 w-5 text-[var(--accent)]" />
-              <div className="ty-head ty-ink mt-2">Week 1 is free</div>
-              <p className="ty-body ty-muted mt-1">Unlock {PLAN.months} months of daily live classes, the full path and your Certificate of Completion.</p>
-              <Button onClick={() => setDialog(true)} className="mt-4 w-full">Enrol for ₹{PLAN.price.toLocaleString("en-IN")}</Button>
+              <div className="ty-head ty-ink mt-2">{freePeriod() ? `Free until ${FREE_UNTIL_LABEL}` : "Go further"}</div>
+              <p className="ty-body ty-muted mt-1">{freePeriod() ? "Every lesson, test and grammar topic is free. Add live classes with our trainers and your certificate:" : `Get live classes, every chapter for ${PLAN.months} months and your Certificate of Completion.`}</p>
+              <Button onClick={() => setDialog(true)} className="mt-4 w-full">{`Pay ₹${PLAN.price.toLocaleString("en-IN")}`}</Button>
             </section>
           )}
         </aside>
       </div>
-      {dialog && <EnrolDialog userId={user.id} onClose={() => setDialog(false)} />}
+      {dialog !== false && <EnrolDialog userId={user.id} week={typeof dialog === "number" ? dialog : undefined} onClose={() => setDialog(false)} />}
     </div>
   );
 }

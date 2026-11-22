@@ -10,16 +10,16 @@ const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} | Spoken English & Communication Training in ${SITE.city}`,
+    default: `${SITE.name} | Learn Spoken English Online`,
     template: `%s | ${SITE.name}`,
   },
-  description: `Learn spoken English, build confidence and master communication skills with live online classes and a personal practice login. A 3-month course from ₹3,000, with Mumbai in-person sessions available.`,
-  keywords: ["spoken English classes", "English speaking course", "communication skills", "public speaking", "interview preparation", "corporate English training", SITE.city],
+  description: "Learn English with SpeakUp: daily 15-minute lessons, every grammar topic and live online classes with skilled trainers. Register for free.",
+  keywords: ["spoken English classes", "English speaking course", "communication skills", "public speaking", "interview preparation", "learn English online", "English grammar course"],
   openGraph: {
     type: "website",
     siteName: SITE.name,
-    title: `${SITE.name} | ${SITE.tagline}`,
-    description: "Spoken English, confidence and communication training with real practice, friendly trainers and visible progress.",
+    title: `${SITE.name} | Learn Spoken English Online`,
+    description: SITE.tagline,
     locale: "en_IN",
     images: [{ url: "/images/og-image.jpg", width: 1200, height: 630 }],
   },
@@ -36,7 +36,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     url: SITE.url,
     telephone: SITE.phone,
     email: SITE.email,
-    address: { "@type": "PostalAddress", streetAddress: SITE.address, addressLocality: SITE.city, addressCountry: "IN" },
+    areaServed: "IN",
+    description: "Online spoken English classes: daily lessons and live online classes.",
   };
   return (
     <html lang="en" className={`${heading.variable} ${body.variable} scroll-smooth`}>

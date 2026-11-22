@@ -10,13 +10,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Award, Bell, BookOpen, CalendarDays, ChevronRight, Flame, Flag, Help, LayoutDashboard, Lightbulb, Lock, LogOut, Map, Menu,
-  RotateCcw, Search, Settings, SidebarToggle, Unfold, UserRound, Video, X, type IconType,
+  PenLine, RotateCcw, Search, Settings, SidebarToggle, Unfold, UserRound, Video, X, type IconType,
 } from "@/components/learn/icons";
-import { logout, streakOf, useAuth } from "@/lib/auth";
+import { isStaff, logout, streakOf, useAuth } from "@/lib/auth";
 import { CourseProvider, useCourse } from "@/lib/course";
 import { currentNode, statusOf, MILESTONES } from "@/lib/path-state";
 import { countdown, fmtTime, isPast, startsInMin } from "@/lib/live";
-import { FREE_WEEKS } from "@/lib/path-data";
 import { PLAN } from "@/lib/learn-data";
 import { Avatar } from "@/components/learn/Avatar";
 import { cn } from "@/lib/utils";
@@ -24,13 +23,16 @@ import { LiveProvider, useLive } from "./LiveProvider";
 import { LiveBadge, liveNow } from "./live";
 import { EnrolDialog } from "./EnrolDialog";
 import { nodeHref } from "./LessonPlayer";
-import { Badge, Meter, btn } from "./ui";
+import { Badge, btn } from "./ui";
+import { opener } from "@/lib/access";
+import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "live" | "review" };
 const GROUPS: { label: string; items: NavItem[] }[] = [
   { label: "Learn", items: [
     { href: "/learn", label: "Dashboard", icon: LayoutDashboard },
     { href: "/learn/path", label: "My path", icon: Map },
+    { href: "/learn/grammar", label: "Grammar guide", icon: PenLine },
     { href: "/learn/review", label: "Review", icon: RotateCcw, badge: "review" },
   ] },
   { label: "Classes", items: [
@@ -106,8 +108,8 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
     <div className="flex h-full flex-col">
       {/* workspace block */}
       <div className={cn("flex h-14 shrink-0 items-center gap-2.5 border-b border-[var(--border)]", collapsed ? "justify-center px-2" : "px-4")}>
-        <Link href="/learn" className="logo-mark grid size-7 shrink-0 place-items-center text-[11px] font-semibold" aria-label="Your English dashboard">YE</Link>
-        {!collapsed && <div className="min-w-0"><div className="ty-subject ty-ink truncate">Your English</div><div className="ty-label ty-subtle -mt-0.5 truncate">{user.enrolled ? PLAN.name : "Free preview"}</div></div>}
+        <Link href="/learn" className="logo-mark grid size-7 shrink-0 place-items-center text-[11px] font-semibold" aria-label="SpeakUp dashboard">SU</Link>
+        {!collapsed && <div className="min-w-0"><div className="ty-subject ty-ink truncate">SpeakUp</div><div className="ty-label ty-subtle -mt-0.5 truncate">{user.enrolled ? PLAN.name : "Free"}</div></div>}
       </div>
 
       <nav aria-label="Student area" className="flex-1 overflow-y-auto px-3 py-4">
@@ -140,10 +142,9 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
 
       {!user.enrolled && !collapsed && (
         <div className="nx-glass mx-3 mb-3 p-3.5">
-          <div className="flex items-center justify-between"><span className="ty-label ty-caps ty-accent">Free preview</span><span className="ty-label ty-mono ty-subtle">Week {FREE_WEEKS} of 12</span></div>
-          <Meter pct={(FREE_WEEKS / 12) * 100} className="mt-2 !h-1.5" />
-          <p className="ty-note ty-muted mt-2.5">Unlock daily live classes, all 12 weeks and your certificate.</p>
-          <button onClick={() => setEnrol(true)} className={btn("primary", "sm", "mt-3 w-full")}>Enrol for ₹{PLAN.price.toLocaleString("en-IN")}</button>
+          <span className="ty-label ty-caps ty-accent">{freePeriod() ? "Everything free" : "Free plan"}</span>
+          <p className="ty-note ty-muted mt-1.5">{freePeriod() ? `All lessons and tests are free until ${FREE_UNTIL_LABEL}. Live classes and the certificate come with the plan.` : "Get live classes, every chapter and your certificate."}</p>
+          <button onClick={() => setEnrol(true)} className={btn("primary", "sm", "mt-3 w-full")}>{`Pay ₹${PLAN.price.toLocaleString("en-IN")}`}</button>
         </div>
       )}
 
@@ -175,7 +176,7 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
           <button onClick={() => setRail((r) => !r)} aria-label={rail ? "Expand sidebar" : "Collapse sidebar"} className="hidden size-8 place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)] lg:grid"><SidebarToggle className="h-[18px] w-[18px]" /></button>
           <span aria-hidden className="mx-1 hidden h-5 w-px bg-[var(--border)] sm:block" />
           <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-[13px]">
-            <Link href="/learn" className="hidden shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:inline">Your English</Link>
+            <Link href="/learn" className="hidden shrink-0 text-[var(--text-muted)] hover:text-[var(--text-primary)] sm:inline">SpeakUp</Link>
             {page && <><ChevronRight className="hidden h-3.5 w-3.5 shrink-0 text-[var(--text-subtle)] sm:block" />{sub ? <Link href={page.href} className="truncate text-[var(--text-muted)] hover:text-[var(--text-primary)]">{page.label}</Link> : <span className="truncate font-medium text-[var(--text-primary)]">{page.label}</span>}</>}
             {sub && <><ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--text-subtle)]" /><span className="truncate font-medium text-[var(--text-primary)]">{sub}</span></>}
           </nav>
@@ -185,8 +186,8 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
           </button>
           <button onClick={() => setPalette(true)} aria-label="Search" className="ml-auto grid size-8 place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)] md:hidden"><Search className="h-[18px] w-[18px]" /></button>
 
-          {live.length > 0 && <Link href="/learn/live" className="flex items-center gap-2 rounded-full bg-[var(--danger-subtle)] py-1 pl-1 pr-3 text-[12px] font-semibold text-[var(--danger)]"><LiveBadge />Class is live<span className="hidden sm:inline"> · join</span></Link>}
-          <span className="hidden h-8 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border)] sm:flex" title="Days in a row you studied"><Flame className={cn("h-4 w-4", streak ? "text-[var(--warning)]" : "text-[var(--text-subtle)]")} /><span className="ty-mono">{streak}</span><span className="font-medium text-[var(--text-muted)]">day streak</span></span>
+          {live.length > 0 && <Link href="/learn/live" className="flex items-center gap-2 rounded-full bg-[var(--accent-subtle)] py-1 pl-1 pr-3 text-[12px] font-semibold text-[var(--accent-text)]"><LiveBadge />Class is live<span className="hidden sm:inline"> · join</span></Link>}
+          <span className="hidden h-8 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-semibold text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border)] sm:flex" title="Days in a row you studied"><Flame className={cn("h-4 w-4", streak ? "text-[var(--accent)]" : "text-[var(--text-subtle)]")} /><span className="ty-mono">{streak}</span><span className="font-medium text-[var(--text-muted)]">day streak</span></span>
           <Notifications />
         </header>
 
@@ -212,8 +213,9 @@ function Account({ collapsed, onLeave }: { collapsed: boolean; onLeave: () => vo
       </button>
       {open && (
         <div role="menu" className="nx-pop absolute bottom-full left-0 z-40 mb-2 w-60 rounded-[var(--radius-lg)] bg-white p-1.5 shadow-[var(--shadow-pop)]">
-          <div className="px-2.5 py-2"><div className="ty-subject ty-ink truncate">{user.name}</div><div className="ty-note ty-muted truncate">{user.email}</div><Badge tone={user.enrolled ? "success" : "neutral"} className="mt-2">{user.enrolled ? "Enrolled" : "Free preview"}</Badge></div>
+          <div className="px-2.5 py-2"><div className="ty-subject ty-ink truncate">{user.name}</div><div className="ty-note ty-muted truncate">{user.email}</div><Badge tone={user.enrolled ? "success" : "neutral"} className="mt-2">{user.role === "owner" ? "Owner" : user.role === "trainer" ? "Trainer" : user.enrolled ? "Full plan" : "Free"}</Badge></div>
           <div className="my-1 h-px bg-[var(--border)]" />
+          {isStaff(user.role) && <Link role="menuitem" href="/admin" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] font-medium text-[var(--accent-text)] hover:bg-[var(--surface-hover)]"><LayoutDashboard className="h-4 w-4" />Admin panel</Link>}
           <Link role="menuitem" href="/learn/settings" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><Settings className="h-4 w-4" />Settings and voice</Link>
           <Link role="menuitem" href="/" className="flex h-9 items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><BookOpen className="h-4 w-4" />Visit the website</Link>
           <button role="menuitem" onClick={onLeave} className="flex h-9 w-full items-center gap-2 rounded-md px-2.5 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface-hover)]"><LogOut className="h-4 w-4" />Log out</button>
@@ -245,7 +247,7 @@ function Notifications() {
     <div ref={ref} className="relative">
       <button onClick={() => setOpen((o) => !o)} aria-label={`Notifications${items.length ? ` (${items.length})` : ""}`} aria-expanded={open} className="relative grid size-8 place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)]">
         <Bell className="h-[18px] w-[18px]" />
-        {items.length > 0 && <span className={cn("absolute right-1.5 top-1.5 size-2 rounded-full ring-2 ring-white", urgent ? "bg-[var(--danger)]" : "bg-[var(--accent)]")} />}
+        {items.length > 0 && <span className={cn("absolute right-1.5 top-1.5 size-2 rounded-full ring-2 ring-white", urgent ? "bg-[var(--accent)]" : "bg-[var(--accent)]")} />}
       </button>
       {open && (
         <div className="nx-pop absolute right-0 top-full z-40 mt-2 w-[340px] max-w-[calc(100vw-24px)] rounded-[var(--radius-lg)] bg-white shadow-[var(--shadow-pop)]">
@@ -255,7 +257,7 @@ function Notifications() {
               {items.map((i) => (
                 <li key={i.id}>
                   <Link href={i.href} onClick={() => setOpen(false)} className="flex gap-3 rounded-[var(--radius-md)] p-2.5 hover:bg-[var(--surface-hover)]">
-                    <span className={cn("grid size-8 shrink-0 place-items-center rounded-[var(--radius-md)]", i.urgent ? "bg-[var(--danger-subtle)] text-[var(--danger)]" : "bg-[var(--accent-subtle)] text-[var(--accent-text)]")}><i.icon className="h-4 w-4" /></span>
+                    <span className={cn("grid size-8 shrink-0 place-items-center rounded-[var(--radius-md)]", i.urgent ? "bg-[var(--accent-subtle)] text-[var(--accent-text)]" : "bg-[var(--accent-subtle)] text-[var(--accent-text)]")}><i.icon className="h-4 w-4" /></span>
                     <span className="min-w-0"><span className="ty-body ty-500 ty-ink block truncate">{i.title}</span><span className="ty-note ty-muted line-clamp-2">{i.text}</span></span>
                   </Link>
                 </li>
@@ -281,7 +283,7 @@ function Palette({ onClose }: { onClose: () => void }) {
   const rows = useMemo(() => {
     const pages = ALL.map((n) => ({ id: n.href, group: "Pages", icon: n.icon, label: n.label, hint: "", href: n.href, locked: false }));
     const nodes = course.sequence.map((n) => {
-      const st = statusOf(course, n, progress, !!user?.enrolled);
+      const st = statusOf(course, n, progress, opener(user));
       const label = n.kind === "lesson" ? n.lesson.title : n.title;
       return { id: n.id, group: "Lessons", icon: n.kind === "lesson" ? BookOpen : Flag, label, hint: st === "done" ? "Done" : st === "current" ? "Up next" : st === "paywall" ? "Enrol" : `Week ${n.week}`, href: st === "paywall" ? "/learn/path" : nodeHref(n), locked: st === "locked" };
     });

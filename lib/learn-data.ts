@@ -14,7 +14,6 @@ export const PLAN = {
     "Library of 20 chapters and daily speaking tips",
     "Certificate of Completion (for enrolled students who finish the course)",
   ],
-  mumbaiAddon: "Mumbai students can also join in-person practice sessions on Sundays.", // EDIT price/terms
 };
 
 /* ---- library: the "Speak Up" book chapters, served from /public/book ---- */
