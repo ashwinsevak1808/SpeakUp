@@ -1,26 +1,212 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ============ EDIT: BRAND COLOUR (public website = one green family) ============ */
+/* Plain @theme (not "inline") so these are real CSS variables that a wrapper can override.
+   The student area overrides them below with a plain black/white/grey palette. */
+@theme {
+  --color-brand-50: #f2f8f4;
+  --color-brand-100: #e1efe6;
+  --color-brand-200: #c3dfce;
+  --color-brand-300: #94c6a9;
+  --color-brand-400: #5ea67f;
+  --color-brand-500: #2f8a5e;
+  --color-brand-600: #1f7249;
+  --color-brand-700: #175c3b;
+  --color-brand-800: #124a31;
+  --color-brand-900: #0d3624;
+  --color-brand-950: #08231a;
 
+  --color-ink: #16231d;
+  --color-muted: #5b6b63;
+  --color-line: #e3ebe6;
+
+  /* status colours used in the student area */
+  --color-ok: #16a34a;
+  --color-live: #e11d48;
+
+  /* ACCENT for the student/trainer app: buttons, progress, active items. EDIT here to re-colour the app. */
+  --color-accent-50: #eefbf4;
+  --color-accent-100: #d6f5e3;
+  --color-accent-200: #ade9c8;
+  --color-accent-300: #78d6a5;
+  --color-accent-400: #3fbe80;
+  --color-accent-500: #1ea566;
+  --color-accent-600: #128a53;
+  --color-accent-700: #0f6f45;
+  --color-accent-800: #0f5839;
+}
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-display: var(--font-heading), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============ STUDENT / TRAINER AREA: the Neemo workspace design system ============
+   Same tokens as Neemo-Company/src/styles/theme.css: a #FAFAFA canvas, white surfaces
+   ringed by a hairline, one rationed indigo accent, Inter, tabular figures.
+   brand-* become Neemo's neutral ink ramp; accent-* becomes the indigo ramp. */
+.app-theme {
+  --canvas: #fafafa;
+  --surface: #ffffff;
+  --surface-subtle: #f9f9fb;
+  --surface-hover: #f4f4f7;
+  --surface-sunken: #f0f1f5;
+  --border: #e3e4eb;
+  --border-strong: #cacbd8;
+  --border-accent: #c7c9fa;
+  --text-primary: #11111f;
+  --text-secondary: #4b4d65;
+  --text-muted: #5a5c78;
+  --text-subtle: #666887;
+  --text-on-accent: #ffffff;
+  --accent: #6366f1;
+  --accent-hover: #5254e0;
+  --accent-active: #4547cc;
+  --accent-text: #4547cc;
+  --accent-subtle: #eeeffe;
+  --accent-muted: #d4d5fb;
+  --accent-soft: #a5b4fc;
+  --accent-ring: color-mix(in srgb, #6366f1 18%, transparent);
+  --success: #0f7a58;
+  --success-subtle: #e5f4ef;
+  --warning: #9e5a00;
+  --warning-subtle: #fdf3e5;
+  --warning-border: #f3d9b1;
+  --danger: #c12b42;
+  --danger-subtle: #fdecef;
+  --info: #2457c8;
+  --info-subtle: #ebf1fd;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --shadow-card: 0 0 0 1px var(--border), 0 1px 2px rgba(17, 17, 31, 0.04);
+  --shadow-pop: 0 0 0 1px var(--border), 0 12px 32px -8px rgba(17, 17, 31, 0.16);
+
+  --color-brand-50: #f9f9fb;
+  --color-brand-100: #f0f1f5;
+  --color-brand-200: #e3e4eb;
+  --color-brand-300: #cacbd8;
+  --color-brand-400: #8b8da6;
+  --color-brand-500: #666887;
+  --color-brand-600: #5a5c78;
+  --color-brand-700: #4b4d65;
+  --color-brand-800: #24253a;
+  --color-brand-900: #11111f;
+  --color-brand-950: #0a0a14;
+  --color-ink: #11111f;
+  --color-muted: #5a5c78;
+  --color-line: #e3e4eb;
+  --color-ok: #0f7a58;
+  --color-live: #c12b42;
+  --color-accent-50: #eeeffe;
+  --color-accent-100: #e2e3fd;
+  --color-accent-200: #d4d5fb;
+  --color-accent-300: #a5b4fc;
+  --color-accent-400: #818cf8;
+  --color-accent-500: #6366f1;
+  --color-accent-600: #6366f1;
+  --color-accent-700: #4547cc;
+  --color-accent-800: #3a3cb0;
+  --font-heading: var(--font-body);
+  background: var(--canvas);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
 }
+.app-theme .logo-mark { background: var(--accent); color: #fff; box-shadow: none; border-radius: var(--radius-md); }
+.app-theme ::selection { background: var(--accent-muted); color: var(--text-primary); }
+.app-theme :focus-visible { outline-color: var(--accent); }
+
+/* ---- Typography (Neemo typography.css): seven sizes, three weights ---- */
+.ty-figure { font-variant-numeric: tabular-nums; font-size: 27px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.1; }
+.ty-title { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.ty-head { font-size: 15.5px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3; }
+.ty-subject { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.35; }
+.ty-body { font-size: 13px; font-weight: 400; letter-spacing: -0.005em; line-height: 1.55; }
+.ty-note { font-size: 12px; font-weight: 400; letter-spacing: 0; line-height: 1.45; }
+.ty-label { font-size: 11px; font-weight: 500; letter-spacing: 0.01em; line-height: 1.4; }
+.ty-caps { text-transform: uppercase; letter-spacing: 0.07em; }
+.ty-mono { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.ty-ink { color: var(--text-primary); }
+.ty-secondary { color: var(--text-secondary); }
+.ty-muted { color: var(--text-muted); }
+.ty-subtle { color: var(--text-subtle); }
+.ty-accent { color: var(--accent-text); }
+.ty-500 { font-weight: 500; }
+.ty-600 { font-weight: 600; }
+
+/* ---- Page head (nx-pagehead) ---- */
+.nx-page { display: flex; flex-direction: column; gap: 24px; }
+.nx-pagehead__row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.nx-pagehead__eyebrow { font: 400 13px/20px var(--font-body); color: var(--text-muted); }
+.nx-pagehead__title { margin: 0; font: 700 24px/32px var(--font-body); letter-spacing: -0.02em; color: var(--text-primary); }
+.nx-pagehead__desc { margin: 4px 0 0; font: 400 14px/22px var(--font-body); color: var(--text-muted); max-width: 44rem; }
+.nx-pagehead__actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Buttons (Neemo actions.css) ---- */
+.btn-base { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; white-space: nowrap; font-weight: 600; letter-spacing: -0.01em; cursor: pointer; border-radius: var(--radius-md); transition: background 140ms ease, box-shadow 140ms ease, color 140ms ease; }
+.btn-base:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
+.btn-base:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.btn-md { height: 36px; padding: 0 14px; font-size: 13px; }
+.btn-lg { height: 42px; padding: 0 18px; font-size: 14px; }
+.btn-primary { color: var(--text-on-accent); background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 2px rgba(16,24,40,.16); }
+.btn-primary:hover { background: linear-gradient(180deg, var(--accent-hover) 0%, var(--accent-active) 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 3px rgba(16,24,40,.2); }
+.btn-primary:active { background: var(--accent-active); box-shadow: inset 0 2px 4px rgba(16,24,40,.28); }
+.btn-secondary { color: var(--text-primary); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.btn-secondary:hover { background: var(--surface-hover); }
+.btn-secondary:active { background: var(--surface-sunken); }
+.btn-tertiary { color: var(--text-secondary); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.btn-tertiary:hover { color: var(--text-primary); background: var(--surface-hover); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.btn-ghost { color: var(--text-muted); background: transparent; }
+.btn-ghost:hover { color: var(--text-primary); background: var(--surface-hover); }
+.btn-danger { color: #fff; background: linear-gradient(180deg, #d23a52 0%, var(--danger) 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 1px 2px rgba(16,24,40,.16); }
+.btn-danger:hover { background: var(--danger); }
+
+/* ---- Surfaces ---- */
+.nx-card { position: relative; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+.nx-glass { position: relative; overflow: hidden; border: 1px solid var(--border-accent); border-radius: 12px; background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent-subtle) 85%, transparent) 0%, transparent 60%), var(--surface); }
+.nx-dash-h { background: linear-gradient(90deg, var(--border) 4px, transparent 4px) 0 0 / 8px 1px repeat-x; }
+
+/* ---- "This week" facts (wss-aside__facts) ---- */
+.nx-facts { display: flex; flex-direction: column; margin: 0; }
+.nx-facts > div, .nx-facts > a { position: relative; display: flex; justify-content: space-between; gap: 12px; padding: 8px; margin: 0 -8px; border-radius: var(--radius-md); }
+.nx-facts > * + * { background: linear-gradient(90deg, var(--border) 4px, transparent 4px) 8px 0 / 8px 1px repeat-x; }
+.nx-facts > a:hover { background-color: var(--surface-hover); }
+.nx-facts dt { font: 400 12.5px/18px var(--font-body); color: var(--text-muted); }
+.nx-facts dd { margin: 0; font: 500 12.5px/18px var(--font-body); color: var(--text-primary); text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ---- Workspace canvas wash behind every page ---- */
+.ws-main-wash { background:
+  radial-gradient(60% 40% at 100% 0%, color-mix(in srgb, var(--accent-subtle) 70%, transparent) 0%, transparent 70%),
+  radial-gradient(40% 30% at 0% 0%, color-mix(in srgb, var(--accent-subtle) 35%, transparent) 0%, transparent 70%),
+  var(--canvas); }
+
+@keyframes nx-spin { to { transform: rotate(360deg); } }
+@keyframes nx-pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: none; } }
+.nx-pop { animation: nx-pop 140ms ease-out; transform-origin: top; }
+
+:root { --background: #ffffff; --foreground: #16231d; }
+
+html { scroll-behavior: smooth; scroll-padding-top: 110px; }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.65;
+}
+
+::selection { background: var(--color-brand-200); color: var(--color-brand-900); }
+:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 3px; border-radius: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}
+
+@media print {
+  @page { size: A4 landscape; margin: 12mm; }
+  body { background: #fff !important; }
 }

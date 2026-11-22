@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Your English: website
 
-## Getting Started
+Next.js 16 (App Router) + Tailwind CSS 4 + Framer Motion. 17 routes.
 
-First, run the development server:
-
+## Run
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
+npm run build && npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Edit your content (almost everything is in ONE file)
+`lib/data.ts`: business name, phone, WhatsApp, address, social links, courses, syllabus,
+trainers, testimonials, batches & fees, FAQs, level-test questions.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other things to replace before launch:
+- `SITE.url` in `lib/data.ts`: your real domain (used for SEO, sitemap).
+- `SITE.mapEmbed`: Google Maps embed URL (Share → Embed a map → copy the `src`).
+- `public/sample-chapter.pdf`: your real e-book sample chapter.
+- **Photos:** see `IMAGE-PROMPTS.md`. Every image is a placeholder in `public/images/`; overwrite each with a same-named .jpg.
+- Brand colours: `@theme` block at the top of `app/globals.css` (one green family: change `brand-*` and everything follows).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Receive form leads
+All forms post to `app/api/lead/route.ts`, which currently validates and logs.
+Add one of: email (Resend), Google Sheets webhook, WhatsApp/Slack webhook, or a CRM.
 
-## Learn More
+## Pages
+/ · /about · /courses · /courses/[slug] (5 courses) · /how-it-works · /beyond-the-classroom ·
+/trainers · /success-stories · /pricing · /free-ebook · /faq · /corporate · /contact · /level-test
 
-To learn more about Next.js, take a look at the following resources:
+## Student area (online-first)
+A guided 12-week course, not a test. Plain black/white/grey UI (`.app-theme` in `app/globals.css`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Students** (`/signup`, `/login`, then `/learn`): dashboard with today's lesson ("Start here"), LIVE indicator,
+My Path (5-step daily lessons + weekly checkpoints), Live Classes (calendar + Google Meet join links for enrolled
+students), Private Sessions (Rs 150 per 30 min), Review (your own missed exercises), Library, Tips, Certificate,
+Settings (level, goal, voice).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Trainers** (`/trainer`): schedule classes (one-off or daily/weekdays/weekly series), paste Google Meet links, press
+**Go live**, see private bookings, and edit/add lessons. Sign in with `TRAINER_PASSCODE` (copy `.env.local.example` to
+`.env.local`). With no env set, local development uses the passcode `trainer-demo`.
 
-## Deploy on Vercel
+**Backend** (`app/api/*`, data in `/data/*.json`, git-ignored): `content` (lessons), `sessions` (classes + private
+slots + bookings), `trainer` (sign-in). Lessons come from the backend, so trainers improve them without a code change.
+The built-in course in `lib/path-data.ts` is only the starting copy.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Personal**: level (intermediate students skip 4 beginner lessons), goal (lessons tagged "For your goal"), the voice and
+speed used for listening, and a Review list built from each student's own mistakes. Speech is checked in the browser
+(Chrome/Edge); no audio is recorded or stored by us.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Still in **demo mode**: accounts, enrolment and payment are simulated in the browser. See `SETUP-SUPABASE.md`.
