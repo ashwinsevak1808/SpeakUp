@@ -16,6 +16,7 @@ import { Avatar } from "@/components/learn/Avatar";
 import { Badge } from "@/components/learn/ui";
 import { cn } from "@/lib/utils";
 import { AdminProvider, STATUS_LABEL, useAdmin } from "./data";
+import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "requests" | "leads"; owner?: boolean };
 const GROUPS: { label: string; items: NavItem[] }[] = [
@@ -145,7 +146,7 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
             {sub && <><ChevronRight className="h-3.5 w-3.5 shrink-0 text-[var(--text-subtle)]" /><span className="truncate font-medium text-[var(--text-primary)]">{sub}</span></>}
           </nav>
           <button onClick={() => setPalette(true)} className="ml-auto hidden h-8 w-[280px] items-center gap-2 whitespace-nowrap rounded-[var(--radius-md)] bg-white px-2.5 text-[13px] text-[var(--text-subtle)] shadow-[inset_0_0_0_1px_var(--border)] hover:shadow-[inset_0_0_0_1px_var(--border-strong)] md:flex">
-            <Search className="h-4 w-4" />Find a student or page<kbd className="ty-label ml-auto rounded border border-[var(--border)] bg-[var(--surface-subtle)] px-1.5 font-sans">⌘K</kbd>
+            <Search className="h-4 w-4" />Search students, pages…<kbd className="ty-label ml-auto rounded border border-[var(--border)] bg-[var(--surface-subtle)] px-1.5 font-sans">⌘K</kbd>
           </button>
           <button onClick={() => setPalette(true)} aria-label="Search" className="ml-auto grid size-8 place-items-center rounded-md text-[var(--text-muted)] hover:bg-[var(--surface-hover)] md:hidden"><Search className="h-[18px] w-[18px]" /></button>
           <Badge tone="accent" className="hidden sm:inline-flex">{user.role === "owner" ? "Owner" : "Trainer"}</Badge>
@@ -187,50 +188,33 @@ function AccountMenu({ collapsed, onLeave }: { collapsed: boolean; onLeave: () =
   );
 }
 
-/* ---------- ⌘K: jump to a student or a page ---------- */
+/* ---------- ⌘K: jump to a student, a page or an action ---------- */
 function Palette({ onClose }: { onClose: () => void }) {
-  const { people } = useAdmin();
+  const { people, requests, newLeads } = useAdmin();
+  const { user } = useAuth();
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [sel, setSel] = useState(0);
-  const rows = useMemo(() => {
-    const t = q.trim().toLowerCase();
-    const pages = ALL.map((n) => ({ id: n.href, group: "Pages", label: n.label, hint: "", href: n.href, icon: n.icon }));
-    const ppl = people.filter((p) => !t || p.name.toLowerCase().includes(t) || p.email.includes(t) || (p.phone ?? "").includes(t)).slice(0, 30)
-      .map((p) => ({ id: p.id, group: p.role === "student" ? "Students" : "Team", label: `${p.name} · ${p.email}`, hint: p.role === "student" ? STATUS_LABEL[p.status] : p.role === "owner" ? "Owner" : "Trainer", href: `/admin/students/${p.id}`, icon: UserRound }));
-    return [...(t ? [] : pages), ...ppl, ...(t ? pages.filter((p) => p.label.toLowerCase().includes(t)) : [])];
-  }, [q, people]);
-  const go = (r?: (typeof rows)[number]) => { if (!r) return; onClose(); router.push(r.href); };
-  const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setSel((s) => Math.min(rows.length - 1, s + 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setSel((s) => Math.max(0, s - 1)); }
-    else if (e.key === "Enter") { e.preventDefault(); go(rows[sel]); }
-    else if (e.key === "Escape") onClose();
-  };
-  let last = "";
+  const pending = requests.filter((r) => r.status === "pending").length;
+  const items = useMemo<PaletteItem[]>(() => {
+    const go = (href: string) => () => router.push(href);
+    const actions: PaletteItem[] = [
+      { id: "a-class", group: "Actions", label: "Schedule a class", icon: CalendarDays, keywords: "new live class session meet", run: go("/admin/classes") },
+      ...(pending ? [{ id: "a-req", group: "Actions", label: `Review ${pending} enrolment ${pending === 1 ? "request" : "requests"}`, icon: ShieldCheck, run: go("/admin/enrolments") }] : []),
+      ...(newLeads ? [{ id: "a-leads", group: "Actions", label: `Follow up ${newLeads} new ${newLeads === 1 ? "lead" : "leads"}`, icon: Zap, run: go("/admin/leads") }] : []),
+      ...(user?.role === "owner" ? [{ id: "a-team", group: "Actions", label: "Add a trainer", icon: Users, keywords: "invite staff team", run: go("/admin/team") }] : []),
+      { id: "a-app", group: "Actions", label: "Open the student app", icon: Grad, keywords: "learn preview", run: go("/learn") },
+    ];
+    const pages: PaletteItem[] = ALL.map((n) => ({ id: n.href, group: "Pages", label: n.label, icon: n.icon, run: go(n.href) }));
+    const byActive = [...people].sort((a, b) => (b.lastActive ?? b.createdAt).localeCompare(a.lastActive ?? a.createdAt));
+    const ppl: PaletteItem[] = byActive.map((p) => ({
+      id: p.id, group: p.role === "student" ? "Students" : "Team", label: p.name, sub: p.email, keywords: p.phone ?? "",
+      hint: p.role === "student" ? STATUS_LABEL[p.status] : p.role === "owner" ? "Owner" : "Trainer",
+      mark: <Avatar name={p.name} avatar={p.avatar} size={30} />, run: go(`/admin/students/${p.id}`),
+    }));
+    return [...actions, ...pages, ...ppl];
+  }, [people, pending, newLeads, user, router]);
   return (
-    <div className="app-theme fixed inset-0 z-[60] grid place-items-start justify-center px-3 pt-[12vh]" style={{ background: "rgba(17,17,31,.28)" }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-label="Search" className="nx-pop w-full max-w-[560px] overflow-hidden rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-pop)]">
-        <div className="flex items-center gap-2.5 border-b border-[var(--border)] px-4">
-          <Search className="h-[18px] w-[18px] text-[var(--text-subtle)]" />
-          <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} onKeyDown={onKey} placeholder="Name, email or phone…" aria-label="Find a student or page" className="h-12 flex-1 bg-transparent text-[14px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-subtle)]" />
-          <kbd className="ty-label rounded border border-[var(--border)] px-1.5 text-[var(--text-subtle)]">Esc</kbd>
-        </div>
-        <ul className="max-h-[50vh] overflow-y-auto p-1.5">
-          {rows.length === 0 && <li className="ty-body ty-muted px-3 py-8 text-center">Nothing matches “{q}”.</li>}
-          {rows.map((r, i) => {
-            const head = r.group !== last ? r.group : null; last = r.group;
-            return (
-              <li key={r.group + r.id}>
-                {head && <div className="ty-label ty-caps ty-subtle px-2.5 pb-1 pt-2.5">{head}</div>}
-                <button onMouseEnter={() => setSel(i)} onClick={() => go(r)} className={cn("flex h-9 w-full items-center gap-2.5 rounded-[var(--radius-md)] px-2.5 text-left text-[13px]", i === sel ? "bg-[var(--accent-subtle)] text-[var(--accent-text)]" : "text-[var(--text-secondary)]")}>
-                  <r.icon className="h-4 w-4 shrink-0" /><span className="min-w-0 flex-1 truncate">{r.label}</span>{r.hint && <span className="ty-label shrink-0 text-[var(--text-subtle)]">{r.hint}</span>}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </div>
+    <CommandPalette items={items} onClose={onClose} placeholder="Search students, pages and actions"
+      groups={["Actions", "Students", "Team", "Pages"]} limits={{ Students: 8, Team: 5 }} emptyLimits={{ Students: 5, Team: 0 }}
+      emptyHint="Try a name, an email or a phone number." />
   );
 }

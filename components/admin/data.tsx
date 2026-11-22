@@ -115,7 +115,7 @@ export function ago(iso: string | null, now = Date.now()) {
 export const daysSince = (iso: string | null, now = Date.now()) => (iso ? (now - +new Date(iso)) / 86400000 : Infinity);
 export const fmtDay = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 export const fmtDayTime = (iso: string) => new Date(iso).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" });
-export const STATUS_LABEL: Record<StudentStatus, string> = { enrolled: "Enrolled", requested: "Requested", free: "Free preview" };
+export const STATUS_LABEL: Record<StudentStatus, string> = { enrolled: "Full plan", requested: "Requested", free: "Free" };
 export const waLink = (phone: string | null, text = "") => {
   if (!phone) return "";
   const n = phone.replace(/[^\d]/g, ""); const full = n.length === 10 ? `91${n}` : n;

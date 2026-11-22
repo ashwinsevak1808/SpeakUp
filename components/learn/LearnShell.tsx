@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Award, Bell, BookOpen, CalendarDays, ChevronRight, Flame, Flag, Help, LayoutDashboard, Lightbulb, Lock, LogOut, Map, Menu,
+  Award, Bell, BookOpen, CalendarDays, ChevronRight, Flame, Flag, Help, LayoutDashboard, Lightbulb, Play, Lock, LogOut, Map, Menu,
   PenLine, RotateCcw, Search, Settings, SidebarToggle, Unfold, UserRound, Video, X, type IconType,
 } from "@/components/learn/icons";
 import { isStaff, logout, streakOf, useAuth } from "@/lib/auth";
@@ -24,6 +24,7 @@ import { LiveBadge, liveNow } from "./live";
 import { EnrolDialog } from "./EnrolDialog";
 import { nodeHref } from "./LessonPlayer";
 import { Badge, btn } from "./ui";
+import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 import { opener } from "@/lib/access";
 import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
 
@@ -277,53 +278,26 @@ function Palette({ onClose }: { onClose: () => void }) {
   const { user, progress } = useAuth();
   const course = useCourse();
   const router = useRouter();
-  const [q, setQ] = useState("");
-  const [sel, setSel] = useState(0);
   const cur = currentNode(course, progress);
-  const rows = useMemo(() => {
-    const pages = ALL.map((n) => ({ id: n.href, group: "Pages", icon: n.icon, label: n.label, hint: "", href: n.href, locked: false }));
-    const nodes = course.sequence.map((n) => {
+  const items = useMemo<PaletteItem[]>(() => {
+    const go = (href: string) => () => router.push(href);
+    const suggested: PaletteItem[] = cur ? [{ id: "cont", group: "Continue", label: cur.kind === "lesson" ? cur.lesson.title : cur.title, sub: cur.kind === "lesson" ? `Day ${cur.lesson.day} · Week ${cur.week}` : `Week ${cur.week} checkpoint`, icon: Play, hint: "Up next", run: go(nodeHref(cur)) }] : [];
+    const pages: PaletteItem[] = ALL.map((n) => ({ id: n.href, group: "Pages", label: n.label, icon: n.icon, run: go(n.href) }));
+    const lessons: PaletteItem[] = course.sequence.map((n) => {
       const st = statusOf(course, n, progress, opener(user));
-      const label = n.kind === "lesson" ? n.lesson.title : n.title;
-      return { id: n.id, group: "Lessons", icon: n.kind === "lesson" ? BookOpen : Flag, label, hint: st === "done" ? "Done" : st === "current" ? "Up next" : st === "paywall" ? "Enrol" : `Week ${n.week}`, href: st === "paywall" ? "/learn/path" : nodeHref(n), locked: st === "locked" };
+      return {
+        id: n.id, group: "Lessons", label: n.kind === "lesson" ? n.lesson.title : n.title, icon: st === "locked" ? Lock : n.kind === "lesson" ? BookOpen : Flag,
+        keywords: `week ${n.week} ${n.kind === "lesson" ? `day ${n.lesson.day} ${n.lesson.kind}` : "checkpoint test"}`,
+        sub: `Week ${n.week}${n.kind === "lesson" ? ` · Day ${n.lesson.day}` : ""}${st === "locked" ? " · opens when you reach it" : ""}`,
+        hint: st === "done" ? "Done" : st === "current" ? "Up next" : st === "paywall" ? "Unlock" : "Later",
+        disabled: st === "locked", run: go(st === "paywall" ? "/learn/path" : nodeHref(n)),
+      };
     });
-    const all = [...(cur ? [{ id: "cont", group: "Suggested", icon: ChevronRight, label: `Continue: ${cur.kind === "lesson" ? cur.lesson.title : cur.title}`, hint: "", href: nodeHref(cur), locked: false }] : []), ...pages, ...nodes];
-    const t = q.trim().toLowerCase();
-    return t ? all.filter((r) => r.label.toLowerCase().includes(t)) : all;
-  }, [q, course, progress, user, cur]);
-  const go = (r?: (typeof rows)[number]) => { if (!r || r.locked) return; onClose(); router.push(r.href); };
-  const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setSel((s) => Math.min(rows.length - 1, s + 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setSel((s) => Math.max(0, s - 1)); }
-    else if (e.key === "Enter") { e.preventDefault(); go(rows[sel]); }
-    else if (e.key === "Escape") onClose();
-  };
-  let lastGroup = "";
+    return [...suggested, ...pages, ...lessons];
+  }, [course, progress, user, router, cur]);
   return (
-    <div className="app-theme fixed inset-0 z-[60] grid place-items-start justify-center bg-[rgba(17,17,31,.28)] px-3 pt-[12vh]" style={{ background: "rgba(17,17,31,.28)" }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-      <div role="dialog" aria-label="Search" className="nx-pop w-full max-w-[560px] overflow-hidden rounded-[var(--radius-xl)] bg-white shadow-[var(--shadow-pop)]">
-        <div className="flex items-center gap-2.5 border-b border-[var(--border)] px-4">
-          <Search className="h-[18px] w-[18px] text-[var(--text-subtle)]" />
-          <input autoFocus value={q} onChange={(e) => { setQ(e.target.value); setSel(0); }} onKeyDown={onKey} placeholder="Search lessons and pages…" aria-label="Search lessons and pages" className="h-12 flex-1 bg-transparent text-[14px] text-[var(--text-primary)] outline-none focus-visible:outline-none placeholder:text-[var(--text-subtle)]" />
-          <kbd className="ty-label rounded border border-[var(--border)] px-1.5 text-[var(--text-subtle)]">Esc</kbd>
-        </div>
-        <ul className="max-h-[50vh] overflow-y-auto p-1.5">
-          {rows.length === 0 && <li className="ty-body ty-muted px-3 py-8 text-center">Nothing matches “{q}”.</li>}
-          {rows.map((r, i) => {
-            const head = r.group !== lastGroup ? r.group : null; lastGroup = r.group;
-            return (
-              <li key={r.group + r.id}>
-                {head && <div className="ty-label ty-caps ty-subtle px-2.5 pb-1 pt-2.5">{head}</div>}
-                <button onMouseEnter={() => setSel(i)} onClick={() => go(r)} disabled={r.locked} className={cn("flex h-9 w-full items-center gap-2.5 rounded-[var(--radius-md)] px-2.5 text-left text-[13px]", i === sel && !r.locked ? "bg-[var(--accent-subtle)] text-[var(--accent-text)]" : "text-[var(--text-secondary)]", r.locked && "opacity-50")}>
-                  {r.locked ? <Lock className="h-4 w-4 shrink-0" /> : <r.icon className="h-4 w-4 shrink-0" />}
-                  <span className="min-w-0 flex-1 truncate">{r.label}</span>
-                  {r.hint && <span className="ty-label shrink-0 text-[var(--text-subtle)]">{r.hint}</span>}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </div>
+    <CommandPalette items={items} onClose={onClose} placeholder="Search lessons, grammar and pages"
+      groups={["Continue", "Pages", "Lessons"]} limits={{ Lessons: 12 }} emptyLimits={{ Lessons: 0 }}
+      emptyHint="Try a grammar topic like “past simple” or a page like “Review”." />
   );
 }
