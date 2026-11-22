@@ -60,6 +60,8 @@ export function SessionCard({ s, now, enrolled, onEnrol, action, compact }: { s:
           <span className="ty-note ty-muted rounded-[var(--radius-md)] bg-[var(--surface-sunken)] px-2.5 py-1.5">Venue shared on WhatsApp</span>
         ) : canJoin && s.link ? (
           <a href={s.link} target="_blank" rel="noopener noreferrer" className={btn(live || soon ? "primary" : "secondary", "md")}><Video className="h-4 w-4" />{live ? "Join now" : "Open Meet link"}<ExternalLink className="h-3.5 w-3.5 opacity-70" /></a>
+        ) : canJoin ? (
+          <span className="ty-note ty-muted inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--surface-sunken)] px-3 py-2"><Video className="h-4 w-4" />Meet link coming soon</span>
         ) : s.kind === "group" ? (
           <button onClick={onEnrol} className={btn("secondary", "md")}><Lock className="h-3.5 w-3.5" />Get the plan to join</button>
         ) : null}

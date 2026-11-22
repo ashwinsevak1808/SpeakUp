@@ -8,6 +8,7 @@ import { Card, EmptyState, PageTitle, btn } from "@/components/learn/ui";
 import { Avatar, SessionCard } from "@/components/learn/live";
 import { BookDialog } from "@/components/learn/BookDialog";
 import { useLive } from "@/components/learn/LiveProvider";
+import { hasPlan } from "@/lib/access";
 
 export default function PrivatePage() {
   const { user } = useAuth();
@@ -36,7 +37,7 @@ export default function PrivatePage() {
           {mine.length > 0 && (
             <section>
               <h2 className="ty-head ty-ink mb-3">Your bookings</h2>
-              <div className="space-y-3">{mine.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => {}} action={<button onClick={() => cancel(s)} className={btn("ghost", "sm")}>Cancel booking</button>} />)}</div>
+              <div className="space-y-3">{mine.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={hasPlan(user)} onEnrol={() => {}} action={<button onClick={() => cancel(s)} className={btn("ghost", "sm")}>Cancel booking</button>} />)}</div>
             </section>
           )}
 

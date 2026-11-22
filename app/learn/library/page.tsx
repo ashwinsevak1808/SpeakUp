@@ -7,7 +7,7 @@ import { CHAPTERS, FREE_CHAPTERS } from "@/lib/learn-data";
 import { Badge, Button, Meter, PageTitle, Ring, Tabs, btn } from "@/components/learn/ui";
 import { EnrolDialog } from "@/components/learn/EnrolDialog";
 import { cn } from "@/lib/utils";
-import { freePeriod } from "@/lib/access";
+import { freePeriod, hasPlan } from "@/lib/access";
 
 type Filter = "all" | "unread" | "free";
 
@@ -19,7 +19,7 @@ export default function Library() {
   const parts = Array.from(new Set(CHAPTERS.map((l) => l.part)));
   const read = progress.read.length;
   const pct = Math.round((read / CHAPTERS.length) * 100);
-  const nextUp = CHAPTERS.find((c) => !progress.read.includes(c.id) && (c.n <= FREE_CHAPTERS || user.enrolled || freePeriod()));
+  const nextUp = CHAPTERS.find((c) => !progress.read.includes(c.id) && (c.n <= FREE_CHAPTERS || hasPlan(user) || freePeriod()));
   const unread = CHAPTERS.filter((c) => !progress.read.includes(c.id)).length;
 
   return (
@@ -48,13 +48,13 @@ export default function Library() {
                 </header>
                 <ul>
                   {list.map((l) => {
-                    const locked = l.n > FREE_CHAPTERS && !user.enrolled && !freePeriod();
+                    const locked = l.n > FREE_CHAPTERS && !hasPlan(user) && !freePeriod();
                     const done = progress.read.includes(l.id);
                     return (
                       <li key={l.id} className={cn("flex flex-wrap items-center gap-3 border-t border-[var(--border)] px-5 py-3.5 sm:flex-nowrap sm:gap-4", locked && "opacity-75")}>
                         <span className={cn("ty-mono grid h-10 w-8 shrink-0 place-items-center rounded-[var(--radius-sm)] text-[13px] font-semibold", done ? "bg-[var(--accent)] text-white" : locked ? "bg-[var(--surface-sunken)] text-[var(--text-subtle)]" : "bg-white text-[var(--text-secondary)] shadow-[inset_0_0_0_1px_var(--border-strong)]")}>{locked ? <Lock className="h-3.5 w-3.5" /> : done ? <Check className="h-4 w-4" strokeWidth={2.5} /> : l.n}</span>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2"><span className="ty-subject ty-ink truncate">{l.title}</span>{l.n <= FREE_CHAPTERS && !user.enrolled && <Badge tone="accent" className="!h-5 !px-2">Free</Badge>}</div>
+                          <div className="flex items-center gap-2"><span className="ty-subject ty-ink truncate">{l.title}</span>{l.n <= FREE_CHAPTERS && !hasPlan(user) && <Badge tone="accent" className="!h-5 !px-2">Free</Badge>}</div>
                           <p className="ty-note ty-muted mt-0.5">Chapter {l.n} · {l.desc}</p>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
@@ -89,7 +89,7 @@ export default function Library() {
               <p className="ty-note ty-muted mt-1">{nextUp.desc}</p>
               <a href={nextUp.href} target="_blank" rel="noopener" className={btn("primary", "md", "mt-4 w-full")}><BookOpen className="h-4 w-4" />Open chapter</a>
             </section>
-          ) : !user.enrolled && (
+          ) : !hasPlan(user) && (
             <section className="nx-glass p-5">
               <div className="ty-subject ty-ink">Unlock every chapter</div>
               <p className="ty-note ty-muted mt-1">With the full plan you can read all {CHAPTERS.length} chapters.</p>

@@ -25,7 +25,7 @@ import { Avatar, LiveBadge, gcalLink, liveNow } from "@/components/learn/live";
 import { useLive } from "@/components/learn/LiveProvider";
 import { nodeHref } from "@/components/learn/LessonPlayer";
 import { cn } from "@/lib/utils";
-import { weekOpen } from "@/lib/access";
+import { hasPlan, weekOpen } from "@/lib/access";
 import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
 
 const BADGE_ICON: Record<string, IconType> = { first: Footprints, streak3: Flame, week1: Flag, speaker: Mic, star: Star, streak7: Flame, month1: Medal, graduate: Trophy };
@@ -48,7 +48,7 @@ export default function Dashboard() {
   const tip = useMemo(() => TIPS[Math.floor((+now - +new Date(now.getFullYear(), 0, 0)) / 86400000) % TIPS.length], [now]);
   if (!user) return null;
 
-  const enrolled = user.enrolled;
+  const enrolled = hasPlan(user);
   const cur = currentNode(course, progress);
   const done = doneNodes(course, progress), total = Math.max(1, publishedNodes(course));
   const pct = (done / total) * 100;
@@ -264,7 +264,9 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2"><LiveBadge /><span className="ty-note ty-500 text-[var(--accent-text)]">Happening now</span></div>
                 <h2 className="ty-head ty-ink mt-3">{live.title}</h2>
                 <div className="ty-body ty-muted mt-1.5 flex items-center gap-2"><Avatar name={live.trainer} size={22} />{live.trainer}</div>
-                {canJoinLive ? (
+                {canJoinLive && !live.link ? (
+                  <p className="ty-body ty-muted mt-4 flex items-center justify-center gap-2 rounded-[var(--radius-lg)] bg-[var(--surface-sunken)] px-4 py-3"><Video className="h-4 w-4" />Meet link coming soon. Your trainer is adding it.</p>
+                ) : canJoinLive ? (
                   <a href={live.link} target="_blank" rel="noopener noreferrer" className={btn("primary", "lg", "mt-4 w-full")}><Video className="h-4 w-4" />Join now on Google Meet</a>
                 ) : (
                   <button onClick={() => setDialog(true)} className={btn("secondary", "lg", "mt-4 w-full")}><Lock className="h-4 w-4" />Get the plan to join</button>

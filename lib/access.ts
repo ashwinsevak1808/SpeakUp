@@ -14,12 +14,12 @@ export const FREE_UNTIL_LABEL = "28 February 2027";
 export const ALWAYS_FREE_WEEKS = 2;   // EDIT: weeks that stay free after the free period (2 of 12, the rest lock)
 export const WEEK_PRICE = 1000;       // EDIT: ₹ to unlock one more week
 
-type Who = Pick<Account, "enrolled" | "unlockedWeeks"> | null | undefined;
+type Who = (Pick<Account, "enrolled" | "unlockedWeeks"> & { role?: Account["role"] }) | null | undefined;
 
 /** Still inside the free period? */
 export const freePeriod = (now: Date = new Date()) => +now <= +FREE_UNTIL;
-/** Has the full plan right now (live classes + everything). */
-export const hasPlan = (u: Who) => !!u?.enrolled;
+/** Has the full plan right now (live classes + everything). Trainers and the owner always do. */
+export const hasPlan = (u: Who) => !!u?.enrolled || u?.role === "trainer" || u?.role === "owner";
 /** Can this person open a week of the path? */
 export const weekOpen = (u: Who, week: number, now: Date = new Date()) =>
   freePeriod(now) || week <= ALWAYS_FREE_WEEKS || hasPlan(u) || !!u?.unlockedWeeks?.includes(week);

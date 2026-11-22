@@ -61,7 +61,7 @@ export function LearnShell({ children }: { children: React.ReactNode }) {
   }
   return (
     <CourseProvider>
-      <LiveProvider userId={user.id}>
+      <LiveProvider key={`${user.id}:${user.enrolled}`} userId={user.id}>
         <Frame onLeave={() => { leaving.current = true; logout(); router.push("/"); }}>{children}</Frame>
       </LiveProvider>
     </CourseProvider>

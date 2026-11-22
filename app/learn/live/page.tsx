@@ -8,6 +8,7 @@ import { Button, Card, PageTitle, btn } from "@/components/learn/ui";
 import { EnrolDialog } from "@/components/learn/EnrolDialog";
 import { Avatar, Calendar, EmptyDay, LiveBadge, SessionCard, liveNow } from "@/components/learn/live";
 import { useLive } from "@/components/learn/LiveProvider";
+import { hasPlan } from "@/lib/access";
 
 export default function LivePage() {
   const { user } = useAuth();
@@ -26,7 +27,7 @@ export default function LivePage() {
   return (
     <div className="nx-page">
       <PageTitle eyebrow="All times are India time (IST)" title="Live classes" text="Classes run every day on Google Meet. Your trainers set the schedule and share the join link here.">
-        {!user.enrolled && <Button onClick={() => setDialog(true)} icon={Lock}>Pay ₹3,000 to join classes</Button>}
+        {!hasPlan(user) && <Button onClick={() => setDialog(true)} icon={Lock}>Pay ₹3,000 to join classes</Button>}
       </PageTitle>
 
       {live.length > 0 && (
@@ -54,11 +55,11 @@ export default function LivePage() {
               <div><dt>Where</dt><dd>Google Meet</dd></div>
               <div><dt>How often</dt><dd>Every day</dd></div>
               <div><dt>Next 7 days</dt><dd>{thisWeek} sessions</dd></div>
-              <div><dt>Your access</dt><dd>{user.enrolled ? "Join link shown" : "With the full plan"}</dd></div>
+              <div><dt>Your access</dt><dd>{hasPlan(user) ? "Join link shown" : "With the full plan"}</dd></div>
             </dl>
             <p className="ty-note ty-muted nx-dash-h mt-3 flex gap-2 pt-3"><Video className="mt-0.5 h-3.5 w-3.5 shrink-0" />Join 5 minutes early and keep your microphone on mute until you speak.</p>
           </section>
-          {!user.enrolled && (
+          {!hasPlan(user) && (
             <section className="nx-glass p-5">
               <CalendarDays className="h-5 w-5 text-[var(--accent)]" />
               <div className="ty-subject ty-ink mt-2">Get the Meet link for every class</div>
@@ -70,11 +71,11 @@ export default function LivePage() {
         <div className="min-w-0 xl:order-1">
           <div className="min-w-0">
             <div className="mb-3 flex items-baseline justify-between"><h2 className="ty-head ty-ink">{selected === today ? "Today" : fmtDate(selected + "T12:00:00+05:30", { weekday: "long", day: "numeric", month: "long" })}</h2><span className="ty-note ty-subtle">{day.length} {day.length === 1 ? "session" : "sessions"}</span></div>
-            <div className="space-y-3">{day.length ? day.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} />) : <EmptyDay />}</div>
+            <div className="space-y-3">{day.length ? day.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={hasPlan(user)} onEnrol={() => setDialog(true)} />) : <EmptyDay />}</div>
             {upcoming.length > 0 && (
               <>
                 <h2 className="ty-head ty-ink mb-3 mt-8">Coming up</h2>
-                <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={user.enrolled} onEnrol={() => setDialog(true)} compact />)}</div>
+                <div className="space-y-3">{upcoming.map((s) => <SessionCard key={s.id} s={s} now={now} enrolled={hasPlan(user)} onEnrol={() => setDialog(true)} compact />)}</div>
               </>
             )}
           </div>
