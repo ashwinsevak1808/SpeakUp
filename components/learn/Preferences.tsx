@@ -4,7 +4,7 @@ import { Check, Volume2 } from "@/components/learn/icons";
 import { saveProfile, useAuth } from "@/lib/auth";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/course-core";
 import type { Goal, Level } from "@/lib/path-data";
-import { accentOf, speak, useVoices } from "@/lib/voice";
+import { ACCENT_CODE, accentOf, curateVoices, shortName, speak, useVoices } from "@/lib/voice";
 import { cn } from "@/lib/utils";
 
 const SAMPLE = "Hello! This is how I will read your lessons aloud.";
@@ -18,52 +18,65 @@ function Choice({ on, onClick, title, text }: { on: boolean; onClick: () => void
   );
 }
 
-/** Level, goal and voice. Changes are saved straight away. */
-export function Preferences() {
+export function LevelPicker() {
   const { user, profile } = useAuth();
-  const voices = useVoices();
-  const [accent, setAccent] = useState("all");
-  const accents = useMemo(() => ["all", ...Array.from(new Set(voices.map((v) => accentOf(v.lang))))], [voices]);
-  const shown = voices.filter((v) => accent === "all" || accentOf(v.lang) === accent);
+  if (!user) return null;
+  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(LEVEL_LABEL) as Level[]).map((l) => <Choice key={l} on={profile.level === l} onClick={() => saveProfile(user.id, { level: l })} title={l === "beginner" ? "Beginner" : "Intermediate"} text={LEVEL_LABEL[l].split(": ")[1]} />)}</div>;
+}
+
+export function GoalPicker() {
+  const { user, profile } = useAuth();
+  if (!user) return null;
+  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(GOAL_LABEL) as Goal[]).map((g) => <Choice key={g} on={profile.goal === g} onClick={() => saveProfile(user.id, { goal: g })} title={GOAL_LABEL[g]} />)}</div>;
+}
+
+/** A short list of good voices as cards: tap to choose, tap the speaker to hear it. */
+export function VoicePicker() {
+  const { user, profile } = useAuth();
+  const all = useVoices();
+  const [playing, setPlaying] = useState("");
+  const voices = useMemo(() => curateVoices(all, profile.voiceURI), [all, profile.voiceURI]);
   if (!user) return null;
   const set = (patch: Parameters<typeof saveProfile>[1]) => saveProfile(user.id, patch);
+  const play = (uri: string) => { setPlaying(uri); const ok = speak(SAMPLE, uri, profile.rate, { onend: () => setPlaying((p) => (p === uri ? "" : p)) }); if (!ok) setPlaying(""); };
+  const speedLabel = profile.rate <= 0.75 ? "Slow" : profile.rate >= 1.05 ? "Fast" : "Normal";
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h3 className="font-display text-lg font-semibold text-brand-900">Your level</h3>
-        <p className="mb-3 text-sm text-muted">Intermediate students skip the beginner-only grammar lessons and move faster.</p>
-        <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(LEVEL_LABEL) as Level[]).map((l) => <Choice key={l} on={profile.level === l} onClick={() => set({ level: l })} title={l === "beginner" ? "Beginner" : "Intermediate"} text={LEVEL_LABEL[l].split(": ")[1]} />)}</div>
-      </section>
-      <section>
-        <h3 className="font-display text-lg font-semibold text-brand-900">Your main goal</h3>
-        <p className="mb-3 text-sm text-muted">We mark the lessons that matter most for it.</p>
-        <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(GOAL_LABEL) as Goal[]).map((g) => <Choice key={g} on={profile.goal === g} onClick={() => set({ goal: g })} title={GOAL_LABEL[g]} />)}</div>
-      </section>
-      <section>
-        <h3 className="font-display text-lg font-semibold text-brand-900">Voice for listening</h3>
-        <p className="mb-3 text-sm text-muted">Choose the accent and tone you want to hear in the lessons.</p>
-        {voices.length === 0 ? (
-          <p className="rounded-xl border border-line p-4 text-sm text-muted">Your device offers one default voice (or none). Voice choices appear here when your phone or computer has more English voices installed.</p>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Accent">{accents.map((a) => <button key={a} onClick={() => setAccent(a)} aria-pressed={accent === a} className={cn("rounded-full border px-4 py-1.5 text-sm font-semibold", accent === a ? "border-accent-600 bg-accent-600 text-white" : "border-line bg-white text-brand-900 hover:bg-brand-50")}>{a === "all" ? "All accents" : a}</button>)}</div>
-            <div className="grid max-h-72 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
-              {shown.map((v) => (
-                <div key={v.voiceURI} className={cn("flex items-center gap-2 rounded-xl border p-2.5 pl-4", profile.voiceURI === v.voiceURI ? "border-accent-600 bg-brand-50" : "border-line bg-white")}>
-                  <button onClick={() => set({ voiceURI: v.voiceURI })} aria-pressed={profile.voiceURI === v.voiceURI} className="min-w-0 flex-1 text-left"><span className="block truncate text-sm font-semibold text-brand-900">{v.name}</span><span className="text-xs text-muted">{accentOf(v.lang)}</span></button>
-                  <button onClick={() => speak(SAMPLE, v.voiceURI, profile.rate)} aria-label={`Preview ${v.name}`} className="grid h-9 w-9 place-items-center rounded-full border border-line hover:bg-white"><Volume2 className="h-4 w-4" /></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        <div className="mt-5">
-          <label htmlFor="rate" className="mb-1 flex justify-between text-sm font-semibold text-brand-900"><span>Speaking speed</span><span className="text-muted">{profile.rate <= 0.75 ? "Slow" : profile.rate >= 1.05 ? "Fast" : "Normal"}</span></label>
-          <input id="rate" type="range" min={0.6} max={1.2} step={0.05} value={profile.rate} onChange={(e) => set({ rate: Number(e.target.value) })} className="w-full accent-accent-600" />
-          <button onClick={() => speak(SAMPLE, profile.voiceURI, profile.rate)} className="mt-3 inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-semibold text-brand-900 hover:bg-brand-50"><Volume2 className="h-4 w-4" />Hear a sample</button>
+    <div className="space-y-6">
+      {voices.length === 0 ? (
+        <p className="rounded-xl border border-line p-4 text-sm text-muted">Your device offers one default voice (or none). Voice choices appear here when your phone or computer has more English voices installed.</p>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {voices.map((v) => {
+            const on = profile.voiceURI === v.voiceURI; const acc = accentOf(v.lang); const isPlaying = playing === v.voiceURI;
+            return (
+              <div key={v.voiceURI} className={cn("flex items-center gap-3 rounded-xl border p-3 transition-colors", on ? "border-accent-600 bg-accent-50/60 shadow-[0_0_0_3px_var(--accent-ring)]" : "border-line bg-white hover:bg-brand-50")}>
+                <button onClick={() => set({ voiceURI: v.voiceURI })} aria-pressed={on} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                  <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-full text-sm font-semibold", on ? "bg-accent-600 text-white" : "bg-brand-100 text-brand-700")}>{on ? <Check className="h-5 w-5" /> : ACCENT_CODE[acc] ?? "EN"}</span>
+                  <span className="min-w-0"><span className="block truncate text-sm font-semibold text-brand-900">{shortName(v)}</span><span className="block text-xs text-muted">{acc} accent</span></span>
+                </button>
+                <button onClick={() => play(v.voiceURI)} aria-label={`Hear ${shortName(v)}`} className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-full border transition-colors", isPlaying ? "border-accent-600 bg-accent-600 text-white" : "border-line bg-white text-brand-700 hover:bg-brand-50")}><Volume2 className={cn("h-4 w-4", isPlaying && "animate-pulse")} /></button>
+              </div>
+            );
+          })}
         </div>
-      </section>
+      )}
+      <div className="rounded-xl border border-line bg-white p-4">
+        <label htmlFor="rate" className="mb-2 flex justify-between text-sm font-semibold text-brand-900"><span>Speaking speed</span><span className="text-muted">{speedLabel}</span></label>
+        <div className="flex items-center gap-3"><span className="text-xs text-muted">Slow</span><input id="rate" type="range" min={0.6} max={1.2} step={0.05} value={profile.rate} onChange={(e) => set({ rate: Number(e.target.value) })} className="w-full accent-accent-600" /><span className="text-xs text-muted">Fast</span></div>
+        <button onClick={() => play(profile.voiceURI)} className="mt-3 inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-semibold text-brand-900 hover:bg-brand-50"><Volume2 className="h-4 w-4" />Hear a sample</button>
+      </div>
+    </div>
+  );
+}
+
+/** Level, goal and voice together (used in the first-time setup). */
+export function Preferences() {
+  return (
+    <div className="space-y-8">
+      <section><h3 className="font-display text-lg font-semibold text-brand-900">Your level</h3><p className="mb-3 text-sm text-muted">Intermediate students skip the beginner-only grammar lessons and move faster.</p><LevelPicker /></section>
+      <section><h3 className="font-display text-lg font-semibold text-brand-900">Your main goal</h3><p className="mb-3 text-sm text-muted">We mark the lessons that matter most for it.</p><GoalPicker /></section>
+      <section><h3 className="font-display text-lg font-semibold text-brand-900">Voice for listening</h3><p className="mb-3 text-sm text-muted">Pick the accent you want to hear in the lessons.</p><VoicePicker /></section>
     </div>
   );
 }

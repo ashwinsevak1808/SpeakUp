@@ -18,6 +18,7 @@ import { currentNode, statusOf, MILESTONES } from "@/lib/path-state";
 import { countdown, fmtTime, isPast, startsInMin } from "@/lib/live";
 import { FREE_WEEKS } from "@/lib/path-data";
 import { PLAN } from "@/lib/learn-data";
+import { Avatar } from "@/components/learn/Avatar";
 import { cn } from "@/lib/utils";
 import { LiveProvider, useLive } from "./LiveProvider";
 import { LiveBadge, liveNow } from "./live";
@@ -201,13 +202,13 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
 
 /* ---------- account popover in the sidebar footer ---------- */
 function Account({ collapsed, onLeave }: { collapsed: boolean; onLeave: () => void }) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { open, setOpen, ref } = usePopover();
   if (!user) return null;
   return (
     <div ref={ref} className="relative mt-1">
       <button onClick={() => setOpen((o) => !o)} aria-haspopup="menu" aria-expanded={open} className={cn("flex w-full items-center gap-2.5 rounded-[var(--radius-md)] p-1.5 text-left hover:bg-[var(--surface-hover)]", collapsed && "justify-center")}>
-        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--accent-subtle)] text-[10.5px] font-semibold text-[var(--accent-text)]">{initials(user.name)}</span>
+        <Avatar name={user.name} photo={profile.photo} avatar={profile.avatar} size={28} />
         {!collapsed && <><span className="min-w-0 flex-1"><span className="block truncate text-[13px] font-medium text-[var(--text-primary)]">{user.name}</span><span className="block truncate text-[11px] text-[var(--text-subtle)]">{user.email}</span></span><Unfold className="h-4 w-4 shrink-0 text-[var(--text-subtle)]" /></>}
       </button>
       {open && (

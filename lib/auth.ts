@@ -11,8 +11,8 @@ export type Account = {
  *  stars = checkpoint rating 1-3; read = library chapters marked as read. */
 export type Progress = { done: string[]; steps: Record<string, number>; stars: Record<string, number>; read: string[]; days: string[]; xp: number; missed: string[] };
 /** Personal settings: how the path is shaped for this student, and which voice reads English aloud. */
-export type Profile = { onboarded: boolean; level: Level; goal: Goal; voiceURI: string; rate: number };
-export const DEFAULT_PROFILE: Profile = { onboarded: false, level: "beginner", goal: "everyday", voiceURI: "", rate: 0.9 };
+export type Profile = { onboarded: boolean; level: Level; goal: Goal; voiceURI: string; rate: number; avatar: string; photo: string };
+export const DEFAULT_PROFILE: Profile = { onboarded: false, level: "beginner", goal: "everyday", voiceURI: "", rate: 0.9, avatar: "", photo: "" };
 const emptyProgress = (): Progress => ({ done: [], steps: {}, stars: {}, read: [], days: [], xp: 0, missed: [] });
 
 const today = () => new Date().toISOString().slice(0, 10);
