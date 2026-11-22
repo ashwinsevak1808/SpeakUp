@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { downloadCsv, input } from "@/components/admin/bits";
 import { ago, fmtDayTime, useAdmin, waLink } from "@/components/admin/data";
+import { SelectMenu } from "@/components/ui/Dropdown";
 
 type Status = "new" | "contacted" | "converted" | "closed";
 type Lead = { id: number; kind: string; name: string | null; email: string | null; phone: string | null; data: Record<string, unknown>; status: Status; staff_note: string | null; created_at: string };
@@ -66,7 +67,7 @@ export default function Leads() {
                     </button>
                     {l.phone && <a href={waLink(l.phone, `Hi ${l.name?.split(" ")[0] ?? ""}! This is SpeakUp. Thanks for getting in touch.`)} target="_blank" rel="noopener" className={btn("ghost", "sm")}>WhatsApp</a>}
                     {l.phone && <a href={`tel:${l.phone}`} className={btn("ghost", "sm", "hidden sm:inline-flex")}>Call</a>}
-                    <label><span className="sr-only">Status</span><select value={l.status} onChange={(e) => patch(l.id, { status: e.target.value as Status })} className={cn(input, "w-auto pr-8", l.status === "new" && "!shadow-[inset_0_0_0_1.5px_var(--accent)] font-semibold text-[var(--accent-text)]")}>{STATUS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></label>
+                    <label><span className="sr-only">Status</span><SelectMenu aria-label="Status" block={false} value={l.status} onChange={(e) => patch(l.id, { status: e.target.value as Status })} className={cn("min-w-[120px]", l.status === "new" && "!shadow-[inset_0_0_0_1.5px_var(--accent)] font-semibold text-[var(--accent-text)]")}>{STATUS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</SelectMenu></label>
                   </div>
                   {open === l.id && (
                     <div className="grid gap-4 bg-[var(--surface-subtle)] px-5 py-4 sm:grid-cols-2">

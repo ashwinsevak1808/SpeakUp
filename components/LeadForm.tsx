@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import { Dropdown } from "@/components/ui/Dropdown";
 
 export type Field = {
   name: string;
@@ -139,12 +140,12 @@ export function LeadForm({
                     {f.required === false && <span className="ml-1 font-normal opacity-60">(optional)</span>}
                   </label>
                   {f.type === "select" ? (
-                    <select {...common} onChange={(e) => set(f.name, e.target.value)}>
-                      <option value="" className="text-slate-900">Select…</option>
-                      {f.options?.map((o) => (
-                        <option key={o} className="text-slate-900">{o}</option>
-                      ))}
-                    </select>
+                    <Dropdown
+                      id={id} name={f.name} size="lg" block value={values[f.name]} invalid={!!err}
+                      aria-describedby={err ? `${id}-err` : undefined}
+                      options={(f.options ?? []).map((o) => ({ value: o, label: o }))}
+                      onChange={(v) => set(f.name, v)} onBlur={() => blur(f)}
+                    />
                   ) : f.type === "textarea" ? (
                     <textarea {...common} rows={4} placeholder={f.placeholder} onChange={(e) => set(f.name, e.target.value)} />
                   ) : (

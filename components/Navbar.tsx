@@ -54,7 +54,7 @@ export function Navbar() {
       <Link href={authed ? "/learn" : "/signup"} className="block h-9 bg-brand-800 text-[13px] text-white transition-colors hover:bg-brand-900">
         <span className="mx-auto flex h-full max-w-6xl items-center justify-center gap-2 px-4 text-center">
           <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider">Free</span>
-          <span className="truncate"><span className="hidden sm:inline">Every lesson and test is free until {FREE_UNTIL_LABEL}. </span><span className="sm:hidden">All lessons free till 28 Feb 2027. </span><b className="underline underline-offset-2">{authed ? "Go to my dashboard" : "Register for free"} →</b></span>
+          <span className="truncate"><span className="hidden sm:inline">Every lesson and test is free until {FREE_UNTIL_LABEL}. </span><span className="sm:hidden">Free till 28 Feb 2027. </span><b className="underline underline-offset-2">{authed ? "My dashboard" : "Register"}<span className="hidden sm:inline">{authed ? "" : " for free"}</span> →</b></span>
         </span>
       </Link>
 

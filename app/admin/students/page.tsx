@@ -9,6 +9,7 @@ import { Person, StatusBadge, Td, Th, downloadCsv, input } from "@/components/ad
 import { ago, daysSince, fmtDay, useAdmin, type Student } from "@/components/admin/data";
 import { cn } from "@/lib/utils";
 import { useNow } from "@/lib/use-live";
+import { SelectMenu } from "@/components/ui/Dropdown";
 
 type F = "all" | "enrolled" | "requested" | "free" | "quiet";
 type S = "active" | "new" | "name" | "progress";
@@ -61,7 +62,7 @@ function Students() {
           ]} />
           <div className="flex gap-2 pb-3">
             <label className="relative min-w-0 flex-1 lg:w-64"><span className="sr-only">Search students</span><Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-[var(--text-subtle)]" /><input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, phone" className={cn(input, "pl-8")} /></label>
-            <label><span className="sr-only">Sort</span><select value={sort} onChange={(e) => setSort(e.target.value as S)} className={cn(input, "w-auto pr-8")}>{SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</select></label>
+            <label><span className="sr-only">Sort</span><SelectMenu aria-label="Sort" block={false} value={sort} onChange={(e) => setSort(e.target.value as S)}>{SORTS.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}</SelectMenu></label>
           </div>
         </div>
 

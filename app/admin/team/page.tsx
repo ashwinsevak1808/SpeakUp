@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Person, input } from "@/components/admin/bits";
 import { ago, fmtDay, useAdmin } from "@/components/admin/data";
+import { SelectMenu } from "@/components/ui/Dropdown";
 
 type Invite = { email: string; role: "trainer" | "owner"; created_at: string };
 
@@ -81,7 +82,7 @@ export default function Team() {
               <div className="ty-subject ty-ink">Add a trainer</div>
               <p className="ty-note ty-muted">Enter the email they use (or will use) to log in.</p>
               <label className="block"><span className="ty-label ty-subtle mb-1 block">Email</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="trainer@example.com" className={input} /></label>
-              <label className="block"><span className="ty-label ty-subtle mb-1 block">Role</span><select value={role} onChange={(e) => setRole(e.target.value as "trainer" | "owner")} className={input}><option value="trainer">Trainer</option><option value="owner">Owner (can manage the team)</option></select></label>
+              <label className="block"><span className="ty-label ty-subtle mb-1 block">Role</span><SelectMenu aria-label="Role" value={role} onChange={(e) => setRole(e.target.value as "trainer" | "owner")}><option value="trainer">Trainer</option><option value="owner">Owner (can manage the team)</option></SelectMenu></label>
               <button disabled={!email.trim()} className={btn("primary", "md", "w-full")}>Add to team</button>
             </form>
           ) : <p className="nx-card ty-body ty-muted p-5">Only an owner can add or remove trainers.</p>}
