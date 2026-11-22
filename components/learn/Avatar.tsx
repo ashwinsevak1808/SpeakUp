@@ -44,7 +44,7 @@ export function Avatar({ name, photo, avatar, size = 32, className }: { name: st
   const look = avatar ? AVATARS[avatar] : undefined;
   return (
     <span style={{ width: size, height: size, fontSize: Math.max(10, size * 0.36) }} className={cn("grid shrink-0 place-items-center overflow-hidden rounded-full bg-[var(--accent-subtle)] font-semibold text-[var(--accent-text)]", className)}>
-      {photo ? /* eslint-disable-next-line @next/next/no-img-element */ <img src={photo} alt="" className="h-full w-full object-cover" />
+      {photo ? <img src={photo} alt="" className="h-full w-full object-cover" /> /* eslint-disable-line @next/next/no-img-element */
         : look ? <Illustration id={avatar!} look={look} />
         : initials(name)}
     </span>

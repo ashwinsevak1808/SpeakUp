@@ -45,7 +45,6 @@ const GROUPS: { label: string; items: NavItem[] }[] = [
 ];
 const ALL = [...GROUPS.flatMap((g) => g.items), { href: "/learn/settings", label: "Settings", icon: Settings }];
 const isActive = (href: string, p: string) => href === "/learn" ? p === "/learn" : href === "/learn/path" ? ["/learn/path", "/learn/lesson", "/learn/checkpoint"].some((x) => p.startsWith(x)) : p.startsWith(href);
-const initials = (n: string) => n.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
 export function LearnShell({ children }: { children: React.ReactNode }) {
   const { status, user } = useAuth();

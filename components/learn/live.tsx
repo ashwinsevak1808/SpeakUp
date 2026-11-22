@@ -4,6 +4,9 @@ import { ArrowRight, CalendarPlus, ChevronLeft, ChevronRight, ExternalLink, Lock
 import { KIND_LABEL, PRIVATE_PRICE, countdown, dayKey, endOf, fmtDate, fmtTime, isLive, isPast, startsInMin, type SessionView } from "@/lib/live";
 import { cn } from "@/lib/utils";
 
+/** One colour per session type, used on cards, the calendar and its legend. */
+export const SESSION_COLOR = { group: "#6366f1", private: "#7c3aed", inperson: "#d97706" } as const;
+
 export function LiveBadge({ className }: { className?: string }) {
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-live px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-white", className)}>
@@ -32,24 +35,24 @@ export function SessionCard({ s, now, enrolled, onEnrol, action, compact }: { s:
   const past = isPast(s, now);
   const canJoin = (s.kind === "group" && enrolled) || (s.kind === "private" && s.mine);
   return (
-    <div className={cn("rounded-xl border bg-white p-4 transition-colors", live ? "border-live/40 ring-1 ring-live/20" : "border-line", past && "opacity-60")}>
+    <div style={{ ["--k" as string]: live ? "#e11d48" : SESSION_COLOR[s.kind] }} className={cn("relative overflow-hidden rounded-xl border bg-white p-4 pl-5 transition-shadow hover:shadow-[var(--shadow-pop)]", live ? "border-live/40 ring-1 ring-live/20" : "border-line", past && "opacity-60")}><span className="absolute inset-y-0 left-0 w-1 bg-[var(--k)]" aria-hidden />
       <div className="flex flex-wrap items-start gap-4">
-        <div className="w-[84px] shrink-0">
-          <div className="whitespace-nowrap font-display text-lg font-semibold leading-none text-brand-900">{fmtTime(s.start)}</div>
-          <div className="mt-1 text-xs text-muted">{s.minutes} min</div>
+        <div className="w-[88px] shrink-0 rounded-lg px-2 py-2 text-center" style={{ background: "color-mix(in srgb, var(--k) 9%, white)" }}>
+          <div className="whitespace-nowrap text-base font-semibold leading-none text-brand-900">{fmtTime(s.start)}</div>
+          <div className="mt-1 text-xs font-medium" style={{ color: "color-mix(in srgb, var(--k) 80%, black)" }}>{s.minutes} min</div>
         </div>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[180px] flex-1">
           <div className="flex flex-wrap items-center gap-2">
             {live && <LiveBadge />}
-            <span className="rounded-full bg-brand-100 px-2.5 py-0.5 text-[11px] font-semibold text-brand-600">{KIND_LABEL[s.kind]}</span>
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold" style={{ background: "color-mix(in srgb, var(--k) 11%, white)", color: "color-mix(in srgb, var(--k) 80%, black)" }}><span className="h-1.5 w-1.5 rounded-full bg-[var(--k)]" />{KIND_LABEL[s.kind]}</span>
             {s.kind === "private" && <span className="text-[11px] font-semibold text-muted">₹{s.price ?? PRIVATE_PRICE}</span>}
           </div>
-          <div className="mt-1.5 font-display font-semibold text-brand-900">{s.title}</div>
-          <div className="mt-1.5 flex items-center gap-2 text-sm text-muted"><Avatar name={s.trainer} size={22} />{s.trainer}{s.kind === "inperson" && s.venue && <><MapPin className="ml-2 h-3.5 w-3.5" />{s.venue}</>}</div>
+          <div className="mt-1.5 ty-head">{s.title}</div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted"><Avatar name={s.trainer} size={22} /><span className="whitespace-nowrap">{s.trainer}</span>{s.kind === "inperson" && s.venue && <><MapPin className="ml-2 h-3.5 w-3.5" />{s.venue}</>}</div>
           {!compact && s.notes && <p className="mt-2 text-sm text-muted">{s.notes}</p>}
           <div className={cn("mt-2 text-xs font-semibold", live ? "text-live" : soon ? "text-brand-900" : "text-muted")}>{/^(Live now|Starts in|Ended)/.test(countdown(s, now)) ? `${fmtDate(s.start)} · ${countdown(s, now)}` : countdown(s, now)}</div>
         </div>
-        <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-col sm:items-end">
           {s.kind === "inperson" ? (
             <span className="rounded-lg border border-line px-3 py-2 text-xs font-semibold text-muted">Venue shared on WhatsApp</span>
           ) : canJoin && s.link ? (
@@ -83,9 +86,9 @@ export function Calendar({ sessions, now, selected, onSelect }: { sessions: Sess
   const move = (d: number) => setCur((c) => { const n = new Date(Date.UTC(c.y, c.m + d, 1)); return { y: n.getUTCFullYear(), m: n.getUTCMonth() }; });
 
   return (
-    <div className="nx-card p-4 sm:p-5">
+    <div className="nx-card self-start p-4 sm:p-5">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-lg font-semibold text-brand-900">{title}</h2>
+        <h2 className="ty-title font-semibold text-brand-900">{title}</h2>
         <div className="flex gap-1">
           <button onClick={() => move(-1)} aria-label="Previous month" className="grid h-9 w-9 place-items-center rounded-lg border border-line hover:bg-brand-50"><ChevronLeft className="h-4 w-4" /></button>
           <button onClick={() => move(1)} aria-label="Next month" className="grid h-9 w-9 place-items-center rounded-lg border border-line hover:bg-brand-50"><ChevronRight className="h-4 w-4" /></button>
@@ -106,16 +109,16 @@ export function Calendar({ sessions, now, selected, onSelect }: { sessions: Sess
               <span>{d.getUTCDate()}</span>
               <span className="flex items-center gap-0.5">
                 {live && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-live" />}
-                {items.slice(0, 3).map((s, i) => <span key={i} className={cn("h-1.5 w-1.5", s.kind === "private" ? "rounded-full border" : s.kind === "inperson" ? "rotate-45" : "rounded-full", isSel ? "border-white bg-white" : "border-accent-600 bg-accent-600", s.kind === "private" && "bg-transparent")} />)}
+                {items.slice(0, 3).map((s, i) => <span key={i} className="h-1.5 w-1.5 rounded-full" style={{ background: isSel ? "#fff" : SESSION_COLOR[s.kind] }} />)}
               </span>
             </button>
           );
         })}
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted">
-        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-accent-600" />Live class</span>
-        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full border border-accent-600" />Your private session</span>
-        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rotate-45 bg-accent-600" />Mumbai in-person</span>
+        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full" style={{ background: SESSION_COLOR.group }} />Live class</span>
+        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full" style={{ background: SESSION_COLOR.private }} />Your private session</span>
+        <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full" style={{ background: SESSION_COLOR.inperson }} />Mumbai in-person</span>
         <span className="flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-live" />Live now</span>
       </div>
     </div>
