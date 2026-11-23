@@ -4,9 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { isStaff, login, requestPasswordReset, signup, updatePassword, useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/Spinner";
 import { Eye, EyeOff } from "@/components/learn/icons";
 
 type Mode = "login" | "signup" | "forgot" | "reset";
+const BUSY: Record<Mode, string> = { login: "Logging in…", signup: "Creating your account…", forgot: "Sending the link…", reset: "Saving your password…" };
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 export function AuthForm({ mode }: { mode: Mode }) {
@@ -21,6 +23,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [formErr, setFormErr] = useState(linkError ? "That link has expired or was already used. Please try again." : "");
   const [sent, setSent] = useState<"" | "confirm" | "reset">("");
   const [busy, setBusy] = useState(false);
+  /** Signed in: keep the button busy until the dashboard has opened, so it never looks stuck. */
+  const [left, setLeaving] = useState(false);
+  const leaving = left || (status === "auth" && mode !== "reset");
   const [show, setShow] = useState(false);
 
   useEffect(() => { if (status === "auth" && mode !== "reset") router.replace(dest); }, [status, dest, router, mode]);
@@ -41,13 +46,13 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setBusy(true);
     if (mode === "signup") {
       const r = await signup(v.name, v.email, v.password);
-      if (r.error) setFormErr(r.error); else if (r.confirm) setSent("confirm");
+      if (r.error) setFormErr(r.error); else if (r.confirm) setSent("confirm"); else setLeaving(true);
     } else if (mode === "login") {
-      const err = await login(v.email, v.password); if (err) setFormErr(err);
+      const err = await login(v.email, v.password); if (err) setFormErr(err); else setLeaving(true);
     } else if (mode === "forgot") {
       const err = await requestPasswordReset(v.email); if (err) setFormErr(err); else setSent("reset");
     } else {
-      const err = await updatePassword(v.password); if (err) setFormErr(err); else router.replace(dest);
+      const err = await updatePassword(v.password); if (err) setFormErr(err); else { setLeaving(true); router.replace(dest); }
     }
     setBusy(false);
   }
@@ -95,13 +100,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const label = { signup: "Create my account", login: "Log in", forgot: "Send reset link", reset: "Save new password" }[mode];
 
   return (
-    <form onSubmit={submit} noValidate className="space-y-4">
+    <form onSubmit={submit} noValidate aria-busy={busy || leaving} className="space-y-4">
+      <fieldset disabled={busy || leaving} className="space-y-4">
       {mode === "signup" && field("name", "Full name", "text", "name")}
       {mode !== "reset" && field("email", "Email", "email", "email")}
       {mode !== "forgot" && field("password", mode === "reset" ? "New password" : "Password", "password", mode === "login" ? "current-password" : "new-password")}
+      </fieldset>
       {formErr && <p role="alert" className="rounded-md bg-red-50 p-3 text-sm font-medium text-red-700">{formErr}</p>}
-      <button disabled={busy} className="w-full rounded-md bg-accent-600 py-3 font-semibold text-white transition-colors hover:bg-accent-700 disabled:opacity-70">
-        {busy ? "Please wait…" : label}
+      <button disabled={busy || leaving} className="flex w-full items-center justify-center gap-2.5 rounded-md bg-accent-600 py-3 font-semibold text-white transition-colors hover:bg-accent-700 disabled:cursor-wait disabled:opacity-90">
+        {(busy || leaving) && <Spinner />}
+        <span aria-live="polite">{leaving ? (mode === "reset" ? "Saved. Opening your dashboard…" : "Opening your dashboard…") : busy ? BUSY[mode] : label}</span>
       </button>
       <p className="text-center text-sm text-muted">
         {mode === "signup" ? <>Already have an account? <Link href={`/login${next ? `?next=${encodeURIComponent(next)}` : ""}`} className="font-semibold text-brand-700 underline underline-offset-4">Log in</Link></>

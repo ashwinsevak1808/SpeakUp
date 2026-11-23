@@ -176,14 +176,29 @@ const friendly = (m: string) =>
   : /already registered|already exists/i.test(m) ? "An account with this email already exists. Please log in."
   : /rate limit|too many/i.test(m) ? "Too many attempts. Please wait a few minutes and try again."
   : /password/i.test(m) && /(short|least|weak)/i.test(m) ? "Please use a stronger password (at least 8 characters)."
+  : /sending .*(email|magic link)|smtp|email.*(not authorized|address not authorized)/i.test(m) ? "We could not send the email right now. Please try again in a few minutes, or message us on WhatsApp."
+  : /token.*(expired|invalid)|otp.*(expired|invalid)|invalid.*(otp|token)/i.test(m) ? "That code is wrong or has expired. Check it, or send a new code."
+  : /signups not allowed|signup.*disabled/i.test(m) ? "No account with this email yet. Please create an account first."
+  : /fetch|network|timed out|taking too long/i.test(m) ? "The connection is slow. Check your internet and try again."
   : m;
+
+/** Never leave a button spinning forever: give up after a while with a clear message. */
+const SLOW = "This is taking too long. Check your internet and try again.";
+function withTimeout<T>(p: Promise<T>, ms = 25000): Promise<T> {
+  return Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error(SLOW)), ms))]);
+}
+const msgOf = (e: unknown) => friendly(e instanceof Error ? e.message : String(e));
 
 /** Create an account. confirm = true means "check your inbox": the email link finishes sign-up. */
 export async function signup(name: string, email: string, password: string): Promise<{ error?: string; confirm?: boolean }> {
-  const { data, error } = await supabase().auth.signUp({
-    email: norm(email), password,
-    options: { data: { name: name.trim() }, emailRedirectTo: `${origin()}/auth/callback?next=/learn` },
-  });
+  let res: Awaited<ReturnType<ReturnType<typeof supabase>["auth"]["signUp"]>>;
+  try {
+    res = await withTimeout(supabase().auth.signUp({
+      email: norm(email), password,
+      options: { data: { name: name.trim() }, emailRedirectTo: `${origin()}/auth/callback?next=/learn` },
+    }));
+  } catch (e) { return { error: msgOf(e) }; }
+  const { data, error } = res;
   if (error) return { error: friendly(error.message) };
   if (data.user && data.user.identities?.length === 0) return { error: "An account with this email already exists. Please log in." };
   if (!data.session) return { confirm: true };
@@ -191,10 +206,33 @@ export async function signup(name: string, email: string, password: string): Pro
   return {};
 }
 export async function login(email: string, password: string): Promise<string | null> {
-  const { data, error } = await supabase().auth.signInWithPassword({ email: norm(email), password });
-  if (error) return friendly(error.message);
-  await load(data.user);
-  return null;
+  try {
+    const { data, error } = await withTimeout(supabase().auth.signInWithPassword({ email: norm(email), password }));
+    if (error) return friendly(error.message);
+    await withTimeout(load(data.user));
+    return null;
+  } catch (e) { return msgOf(e); }
+}
+
+/** Email code login, step 1: send a one-time code (and a sign-in link) to the email.
+ *  New emails get an account automatically when `create` is true. */
+export async function sendLoginCode(email: string, create = true, name?: string): Promise<string | null> {
+  try {
+    const { error } = await withTimeout(supabase().auth.signInWithOtp({
+      email: norm(email),
+      options: { shouldCreateUser: create, data: name?.trim() ? { name: name.trim() } : undefined, emailRedirectTo: `${origin()}/auth/callback?next=/learn` },
+    }));
+    return error ? friendly(error.message) : null;
+  } catch (e) { return msgOf(e); }
+}
+/** Email code login, step 2: check the code and sign in. */
+export async function verifyLoginCode(email: string, code: string): Promise<string | null> {
+  try {
+    const { data, error } = await withTimeout(supabase().auth.verifyOtp({ email: norm(email), token: code.replace(/\D/g, ""), type: "email" }));
+    if (error) return friendly(error.message);
+    await withTimeout(load(data.user));
+    return null;
+  } catch (e) { return msgOf(e); }
 }
 export async function logout() {
   await flush();

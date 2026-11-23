@@ -17,6 +17,7 @@ import { Badge } from "@/components/learn/ui";
 import { cn } from "@/lib/utils";
 import { AdminProvider, STATUS_LABEL, useAdmin } from "./data";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
+import { Spinner } from "@/components/ui/Spinner";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "requests" | "leads"; owner?: boolean };
 const GROUPS: { label: string; items: NavItem[] }[] = [
@@ -44,7 +45,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const leaving = useRef(false);
   useEffect(() => { if (status === "anon" && !leaving.current) router.replace(`/login?next=${encodeURIComponent(pathname)}`); }, [status, pathname, router]);
 
-  if (status !== "auth" || !user) return <div className="app-theme grid min-h-screen place-items-center"><span className="ty-body ty-muted animate-pulse">Loading the admin panel…</span></div>;
+  if (status !== "auth" || !user) return <div className="app-theme grid min-h-screen place-items-center"><span role="status" className="ty-body ty-muted flex items-center gap-3"><Spinner className="h-5 w-5 text-[var(--accent)]" />Loading the admin panel…</span></div>;
   if (!isStaff(user.role)) {
     return (
       <div className="app-theme grid min-h-screen place-items-center p-6">

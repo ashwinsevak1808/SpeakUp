@@ -27,6 +27,7 @@ import { Badge, btn } from "./ui";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 import { opener } from "@/lib/access";
 import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
+import { Spinner } from "@/components/ui/Spinner";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "live" | "review" };
 const GROUPS: { label: string; items: NavItem[] }[] = [
@@ -57,7 +58,7 @@ export function LearnShell({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (status === "anon" && !leaving.current) router.replace(`/login?next=${encodeURIComponent(pathname)}`); }, [status, pathname, router]);
 
   if (status !== "auth" || !user) {
-    return <div className="app-theme grid min-h-screen place-items-center"><span className="ty-body ty-muted animate-pulse">Loading your workspace…</span></div>;
+    return <div className="app-theme grid min-h-screen place-items-center"><span role="status" className="ty-body ty-muted flex items-center gap-3"><Spinner className="h-5 w-5 text-[var(--accent)]" />Loading your workspace…</span></div>;
   }
   return (
     <CourseProvider>
