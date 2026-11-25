@@ -7,12 +7,13 @@ import { NAV_MAIN, NAV_MORE, SITE } from "@/lib/data";
 import { FREE_UNTIL_LABEL } from "@/lib/access";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { BrandMark, Wordmark } from "@/components/brand/BrandMark";
 
 export function Logo({ light }: { light?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5" aria-label={`${SITE.name} home`}>
-      <span className="logo-mark grid h-9 w-9 place-items-center rounded-md bg-brand-700 font-display text-sm font-bold text-white">SU</span>
-      <span className={cn("font-display text-lg font-bold tracking-tight", light ? "text-white" : "text-brand-900")}>{SITE.name}</span>
+      <BrandMark variant={light ? "white" : "color"} className="h-10 w-10" />
+      <Wordmark light={light} className="text-[25px]" />
     </Link>
   );
 }

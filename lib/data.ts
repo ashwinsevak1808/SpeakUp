@@ -17,7 +17,7 @@ export const SITE = {
   youtube: "",   // EDIT
   linkedin: "",  // EDIT
   hours: "100% online · Learn at your own pace",
-  url: "https://www.speakup.in", // EDIT: live domain
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://speak-up-one-omega.vercel.app", // set NEXT_PUBLIC_SITE_URL when you add your own domain
 };
 
 export const WA_LINK = (msg = "Hi! I want to know more about SpeakUp English classes.") =>

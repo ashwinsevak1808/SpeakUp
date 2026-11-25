@@ -28,6 +28,7 @@ import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette
 import { opener } from "@/lib/access";
 import { FREE_UNTIL_LABEL, freePeriod } from "@/lib/access";
 import { Spinner } from "@/components/ui/Spinner";
+import { BrandMark, Wordmark } from "@/components/brand/BrandMark";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "live" | "review" };
 const GROUPS: { label: string; items: NavItem[] }[] = [
@@ -110,8 +111,8 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
     <div className="flex h-full flex-col">
       {/* workspace block */}
       <div className={cn("flex h-14 shrink-0 items-center gap-2.5 border-b border-[var(--border)]", collapsed ? "justify-center px-2" : "px-4")}>
-        <Link href="/learn" className="logo-mark grid size-7 shrink-0 place-items-center text-[11px] font-semibold" aria-label="SpeakUp dashboard">SU</Link>
-        {!collapsed && <div className="min-w-0"><div className="ty-subject ty-ink truncate">SpeakUp</div><div className="ty-label ty-subtle -mt-0.5 truncate">{user.enrolled ? PLAN.name : "Free"}</div></div>}
+        <Link href="/learn" className="shrink-0" aria-label="SpeakUp dashboard"><BrandMark className="size-8" /></Link>
+        {!collapsed && <div className="min-w-0"><div className="truncate"><Wordmark className="text-[17px]" /></div><div className="ty-label ty-subtle -mt-0.5 truncate">{user.enrolled ? PLAN.name : "Free"}</div></div>}
       </div>
 
       <nav aria-label="Student area" className="flex-1 overflow-y-auto px-3 py-4">

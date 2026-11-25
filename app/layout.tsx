@@ -1,10 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Inter } from "next/font/google";
+import { Manrope, Inter, Nunito } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/data";
 
 const heading = Manrope({ variable: "--font-heading", subsets: ["latin"], display: "swap" });
 const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
+const brand = Nunito({ variable: "--font-brand", weight: ["800", "900"], subsets: ["latin"], display: "swap" }); // logo wordmark only
 
 /* EDIT: SEO + Open Graph defaults (each page can override its own title/description) */
 export const metadata: Metadata = {
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
     title: `${SITE.name} | Learn Spoken English Online`,
     description: SITE.tagline,
     locale: "en_IN",
-    images: [{ url: "/images/og-image.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/images/og-image.png", width: 1200, height: 630, alt: "SpeakUp: learn English online" }],
   },
   twitter: { card: "summary_large_image" },
 };
@@ -40,7 +41,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     description: "Online spoken English classes: daily lessons and live online classes.",
   };
   return (
-    <html lang="en" className={`${heading.variable} ${body.variable} scroll-smooth`}>
+    <html lang="en" className={`${heading.variable} ${body.variable} ${brand.variable} scroll-smooth`}>
       <body className="min-h-screen antialiased">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <a href="#main" className="sr-only z-[70] rounded-lg bg-brand-800 px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-3 focus:top-3">

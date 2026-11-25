@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { AdminProvider, STATUS_LABEL, useAdmin } from "./data";
 import { CommandPalette, type PaletteItem } from "@/components/ui/CommandPalette";
 import { Spinner } from "@/components/ui/Spinner";
+import { BrandMark, Wordmark } from "@/components/brand/BrandMark";
 
 type NavItem = { href: string; label: string; icon: IconType; badge?: "requests" | "leads"; owner?: boolean };
 const GROUPS: { label: string; items: NavItem[] }[] = [
@@ -88,8 +89,8 @@ function Frame({ children, onLeave }: { children: React.ReactNode; onLeave: () =
   const sidebar = (collapsed: boolean) => (
     <div className="flex h-full flex-col">
       <div className={cn("flex h-14 shrink-0 items-center gap-2.5 border-b border-[var(--border)]", collapsed ? "justify-center px-2" : "px-4")}>
-        <Link href="/admin" className="logo-mark grid size-7 shrink-0 place-items-center text-[11px] font-semibold" aria-label="Admin dashboard">SU</Link>
-        {!collapsed && <div className="min-w-0"><div className="ty-subject ty-ink truncate">SpeakUp</div><div className="ty-label ty-subtle -mt-0.5 truncate">Admin panel</div></div>}
+        <Link href="/admin" className="shrink-0" aria-label="Admin dashboard"><BrandMark className="size-8" /></Link>
+        {!collapsed && <div className="min-w-0"><div className="truncate"><Wordmark className="text-[17px]" /></div><div className="ty-label ty-subtle -mt-0.5 truncate">Admin panel</div></div>}
       </div>
       <nav aria-label="Admin" className="flex-1 overflow-y-auto px-3 py-4">
         {GROUPS.map((g) => (

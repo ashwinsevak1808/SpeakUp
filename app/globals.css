@@ -255,3 +255,6 @@ body {
 .ddn-item-text { display: flex; min-width: 0; flex: 1; flex-direction: column; }
 .ddn-item-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ddn-item-desc { font-size: 12px; font-weight: 400; color: #59645d; }
+
+/* Logo wordmark font (Nunito Black, loaded in app/layout.tsx) */
+.font-brand { font-family: var(--font-brand), ui-rounded, system-ui, sans-serif; }
