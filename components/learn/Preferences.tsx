@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Check, Volume2 } from "@/components/learn/icons";
+import { BookOpen, Check, Footprints, Grad, Medal, Sun, Users, Volume2, type IconType } from "@/components/learn/icons";
 import { saveProfile, useAuth } from "@/lib/auth";
 import { GOAL_LABEL, LEVEL_LABEL } from "@/lib/course-core";
 import type { Goal, Level } from "@/lib/path-data";
@@ -9,25 +9,41 @@ import { cn } from "@/lib/utils";
 
 const SAMPLE = "Hello! This is how I will read your lessons aloud.";
 
-function Choice({ on, onClick, title, text }: { on: boolean; onClick: () => void; title: string; text?: string }) {
+/** A selectable card: icon tile, title, one line of help, and a check in the corner when chosen. */
+function Choice({ on, onClick, title, text, icon: I, tag }: { on: boolean; onClick: () => void; title: string; text?: string; icon: IconType; tag?: string }) {
   return (
-    <button onClick={onClick} aria-pressed={on} className={cn("flex w-full items-start gap-3 rounded-xl border p-4 text-left transition-colors", on ? "border-accent-600 bg-brand-50" : "border-line bg-white hover:bg-brand-50")}>
-      <span className={cn("mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border", on ? "border-accent-600 bg-accent-600 text-white" : "border-brand-300")}>{on && <Check className="h-3 w-3" />}</span>
-      <span><span className="block font-semibold text-brand-900">{title}</span>{text && <span className="block text-sm text-muted">{text}</span>}</span>
+    <button onClick={onClick} aria-pressed={on} className={cn("group relative flex w-full items-start gap-4 rounded-2xl border bg-white p-4 text-left transition-all sm:p-5", on ? "border-accent-600 shadow-[0_0_0_3px_var(--accent-ring)]" : "border-line hover:border-brand-300 hover:shadow-[var(--shadow-card)]")}>
+      <span className={cn("grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors", on ? "bg-accent-600 text-white" : "bg-[var(--accent-subtle)] text-accent-700 group-hover:bg-brand-100")}><I className="h-5 w-5" /></span>
+      <span className="min-w-0 flex-1 pr-6">
+        <span className="flex flex-wrap items-center gap-2"><span className="font-semibold text-brand-900">{title}</span>{tag && <span className="rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted">{tag}</span>}</span>
+        {text && <span className="mt-1 block text-sm leading-relaxed text-muted">{text}</span>}
+      </span>
+      <span className={cn("absolute right-4 top-4 grid h-5 w-5 place-items-center rounded-full border transition-colors", on ? "border-accent-600 bg-accent-600 text-white" : "border-brand-300 bg-white")}>{on && <Check className="h-3 w-3" />}</span>
     </button>
   );
 }
 
+const LEVELS: Record<Level, { title: string; icon: IconType; text: string; tag: string }> = {
+  beginner: { title: "Beginner", icon: BookOpen, text: "I am starting or rebuilding. Every grammar lesson is included, step by step.", tag: "Full path" },
+  intermediate: { title: "Intermediate", icon: Footprints, text: "I can talk, but I want to improve. Beginner-only lessons are skipped so you move faster.", tag: "Faster path" },
+};
+const GOALS: Record<Goal, { icon: IconType; text: string }> = {
+  everyday: { icon: Sun, text: "Talk to people, shop, travel and make friends with ease." },
+  work: { icon: Users, text: "Meetings, calls, emails and speaking up in front of your team." },
+  interview: { icon: Medal, text: "Answer questions clearly and introduce yourself with confidence." },
+  study: { icon: Grad, text: "Classes, presentations and group work in college." },
+};
+
 export function LevelPicker() {
   const { user, profile } = useAuth();
   if (!user) return null;
-  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(LEVEL_LABEL) as Level[]).map((l) => <Choice key={l} on={profile.level === l} onClick={() => saveProfile(user.id, { level: l })} title={l === "beginner" ? "Beginner" : "Intermediate"} text={LEVEL_LABEL[l].split(": ")[1]} />)}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(LEVEL_LABEL) as Level[]).map((l) => <Choice key={l} on={profile.level === l} onClick={() => saveProfile(user.id, { level: l })} title={LEVELS[l].title} text={LEVELS[l].text} icon={LEVELS[l].icon} tag={LEVELS[l].tag} />)}</div>;
 }
 
 export function GoalPicker() {
   const { user, profile } = useAuth();
   if (!user) return null;
-  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(GOAL_LABEL) as Goal[]).map((g) => <Choice key={g} on={profile.goal === g} onClick={() => saveProfile(user.id, { goal: g })} title={GOAL_LABEL[g]} />)}</div>;
+  return <div className="grid gap-3 sm:grid-cols-2">{(Object.keys(GOAL_LABEL) as Goal[]).map((g) => <Choice key={g} on={profile.goal === g} onClick={() => saveProfile(user.id, { goal: g })} title={GOAL_LABEL[g]} text={GOALS[g].text} icon={GOALS[g].icon} />)}</div>;
 }
 
 /** A short list of good voices as cards: tap to choose, tap the speaker to hear it. */
