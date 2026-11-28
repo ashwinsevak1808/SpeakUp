@@ -516,25 +516,35 @@
       </div>
       ${footLine("Join SpeakUp · link in bio")}`;
 
-    /* Tips & grammar: ONE template. Photo band, label, headline, then one of three bodies. */
-    const tip = (id, label, title, body, foot = "Save this · follow for daily tips") => `<div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fbfaf6">
-        ${ph(id, "position:relative;flex:1;min-height:440px")}
-        <div style="padding:52px ${PAD}px 0">
-          <p class="kick" style="color:#1f7249;margin:0 0 12px">${label}</p>
-          <h2 class="d" style="font-size:100px">${title}</h2>
-          <div style="margin-top:30px">${body}</div>
-        </div>
-        <div style="padding:44px ${PAD}px 56px;display:flex;justify-content:space-between;align-items:center;font:600 26px 'DM Sans';color:#1f7249"><span>${foot}</span>${mark(44)}</div>
-      </div>${chip(`left:${PAD}px;top:${PAD}px`)}`;
-    const lead = (html) => `<p class="t" style="color:#59645d;margin:0 0 18px">${html}</p>`;
-    /* body 1: rule rows */
-    const rows = (items) => items.map(([k, main, sub], i) => `<div style="display:grid;grid-template-columns:180px 1fr;align-items:baseline;padding:18px 0;${i ? "border-top:2px solid #e9ece9;" : ""}"><span class="d" style="font-size:60px;color:#1f7249">${k}</span><div><div style="font:700 38px/1.25 'DM Sans'">${main}</div>${sub ? `<div style="font-size:28px;color:#59645d;margin-top:4px">${sub}</div>` : ""}</div></div>`).join("");
-    /* body 2: wrong vs right */
-    const fix = (wrong, right, why) => `<div style="display:flex;align-items:center;gap:22px;padding:22px 0;border-bottom:2px solid #e9ece9">${cross("#8c968f", 44)}<span class="d" style="font-size:60px;color:#8c968f;text-decoration:line-through;text-decoration-thickness:4px">${wrong}</span></div>
-        <div style="display:flex;align-items:center;gap:22px;padding:22px 0">${check("#1f7249", 44)}<span class="d" style="font-size:66px;color:#1f7249">${right}</span></div>
-        <p class="t" style="margin-top:18px;color:#3d4741">${why}</p>`;
-    /* body 3: numbered list */
-    const list = (items) => items.map((t, i) => `<div style="display:flex;gap:22px;align-items:baseline;padding:15px 0;${i ? "border-top:2px solid #e9ece9;" : ""}"><span class="d" style="font-size:40px;color:#1f7249;width:34px">${i + 1}</span><span style="font:600 35px/1.3 'DM Sans'">${t}</span></div>`).join("");
+    /* Tips & grammar: ONE fixed grid for every post, so the series looks even.
+       Header (logo + category) · photo card (same size always) · headline · content tiles (centred) · footer. */
+    const tip = (id, n, label, title, body, foot = "Save this · follow for daily tips") => `<div style="position:absolute;inset:0;background:#fbfaf6"></div>
+      <div style="position:absolute;left:${PAD}px;right:${PAD}px;top:56px;height:64px;display:flex;align-items:center;justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:14px">${mark(52)}<span style="font:900 36px 'Nunito';letter-spacing:-.01em;color:#131a16">Speak<b style="color:#1f7249">Up</b></span></span>
+        <span style="font:700 24px 'DM Sans';letter-spacing:.12em;text-transform:uppercase;color:#1f7249;background:#edf6f0;border-radius:999px;padding:12px 24px">${label}</span>
+      </div>
+      ${ph(id, `left:${PAD}px;top:150px;width:952px;height:470px;border-radius:36px;overflow:hidden`)}
+      <h2 class="d" style="position:absolute;left:${PAD}px;right:${PAD}px;top:660px;font-size:92px;margin:0">${title}</h2>
+      <div style="position:absolute;left:${PAD}px;right:${PAD}px;top:754px;height:486px;display:flex;flex-direction:column;justify-content:center">${body}</div>
+      <div style="position:absolute;left:${PAD}px;right:${PAD}px;bottom:56px;display:flex;justify-content:space-between;align-items:center;font:600 26px 'DM Sans'">
+        <span style="color:#1f7249">${foot}</span><span style="color:#8c968f;letter-spacing:.08em">TIP ${String(n).padStart(2, "0")}</span>
+      </div>`;
+    const tile = "background:#fff;border-radius:28px;box-shadow:inset 0 0 0 2px #e6ebe8";
+    /* body 1: rule tiles side by side (2 or 3 equal columns) + optional example strip */
+    const rows = (items, example) => `<div style="display:grid;grid-template-columns:repeat(${items.length}, minmax(0,1fr));gap:20px">
+        ${items.map(([k, main, sub]) => `<div style="${tile};padding:34px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px">
+          <span class="d" style="font-size:72px;color:#1f7249;line-height:1">${k}</span>
+          <span style="font:700 32px/1.2 'DM Sans';color:#131a16">${main}</span>
+          ${sub ? `<span style="font-size:24px;line-height:1.35;color:#59645d">${sub}</span>` : ""}
+        </div>`).join("")}
+      </div>${example ? `<div style="margin-top:20px;background:#1f7249;color:#fff;border-radius:24px;padding:26px 32px;font:500 30px/1.3 'DM Sans';text-align:center">${example}</div>` : ""}`;
+    /* body 2: wrong vs right, two equal stacked tiles + why */
+    const fix = (wrong, right, why) => `<div style="${tile};display:flex;align-items:center;gap:24px;padding:30px 36px">${cross("#8c968f", 46)}<span class="d" style="font-size:58px;color:#8c968f;text-decoration:line-through;text-decoration-thickness:4px">${wrong}</span></div>
+        <div style="margin-top:18px;background:#1f7249;border-radius:28px;display:flex;align-items:center;gap:24px;padding:30px 36px">${check("#fff", 46)}<span class="d" style="font-size:58px;color:#fff">${right}</span></div>
+        <p style="margin:24px 0 0;font-size:30px;line-height:1.4;color:#3d4741;text-align:center">${why}</p>`;
+    /* body 3: phrases in a 2 x 2 grid of equal tiles */
+    const list = (items) => `<div style="display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:20px">${items.map((t, i) => `<div style="${tile};padding:28px 30px;min-height:190px;display:flex;flex-direction:column;gap:14px">
+        <span class="d" style="font-size:44px;color:#1f7249;line-height:1">0${i + 1}</span><span style="font:600 30px/1.32 'DM Sans';color:#131a16">${t}</span></div>`).join("")}</div>`;
 
     const POSTS = [
       /* ---------- JOIN US ---------- */
@@ -563,27 +573,27 @@
       {
         id: "grammar-a-an", group: "grammar", kind: "sq", title: "A or An?", meta: "Grammar tip · rule rows",
         prompt: `Close-up of a round wall clock on a pastel green wall in an Indian home, showing about ten past four, a small brass diya and a money plant on a shelf below it, soft afternoon light, minimal and calm. ${STYLE} Wide 3:2 aspect ratio.`,
-        html: () => tip("grammar-a-an", "Grammar tip", "A or An?", lead(`Listen to the <b style="color:#131a16">first sound</b>, not the first letter.`) + rows([["an", "hour", "the h is silent"], ["a", "university", "starts with a 'you' sound"], ["an", "MBA", "starts with an 'em' sound"]]))
+        html: () => tip("grammar-a-an", 1, "Grammar tip", "A or An?", rows([["an", "hour", "silent h"], ["a", "university", "'you' sound"], ["an", "MBA", "'em' sound"]], "It's the first <b>sound</b> that matters, not the letter."))
       },
       {
         id: "grammar-since-for", group: "grammar", kind: "sq", title: "Since or For?", meta: "Grammar tip · rule rows",
         prompt: `A wooden study desk seen from above: an open paper desk calendar, a cup of chai, a pen and a small potted plant, gentle morning light falling across it, warm and minimal. ${STYLE} Wide 3:2 aspect ratio, no readable writing on the calendar.`,
-        html: () => tip("grammar-since-for", "Grammar tip", "Since or For?", rows([["for", "a length of time", "for 3 years · for two hours"], ["since", "a starting point", "since 2023 · since Monday"]]) + `<p class="t" style="margin-top:22px;color:#3d4741">I've lived in Pune <b style="color:#1f7249">for</b> 3 years, <b style="color:#1f7249">since</b> 2023.</p>`)
+        html: () => tip("grammar-since-for", 2, "Grammar tip", "Since or For?", rows([["for", "a length of time", "for 3 years · for two hours"], ["since", "a starting point", "since 2023 · since Monday"]], "I've lived here <b>for</b> 3 years, <b>since</b> 2023."))
       },
       {
         id: "grammar-have", group: "grammar", kind: "sq", title: "Don't say this", meta: "English tip · wrong vs right",
         prompt: `A happy young Indian man stands next to his new small hatchback car outside an apartment building in a green Indian neighbourhood, holding the car keys up and smiling, bright morning light. ${STYLE} Wide 3:2 aspect ratio, subject on the right half of the frame.`,
-        html: () => tip("grammar-have", "Common mistake", "Don't say this.", fix("I am having a car.", "I have a car.", `<b style="color:#131a16">Why?</b> Owning is a state, not an action, so no -ing.`))
+        html: () => tip("grammar-have", 3, "Common mistake", "Don't say this.", fix("I am having a car.", "I have a car.", `<b style="color:#131a16">Why?</b> Owning is a state, not an action, so no -ing.`))
       },
       {
         id: "grammar-in-on-at", group: "grammar", kind: "sq", title: "In, On or At", meta: "Grammar tip · rule rows",
         prompt: `A busy but calm Mumbai local train platform in the early morning, a young Indian office-goer in the foreground looking at her wristwatch, commuters softly blurred, warm sunrise light. ${STYLE} Wide 3:2 aspect ratio.`,
-        html: () => tip("grammar-in-on-at", "Grammar tip", "In, On or At?", rows([["in", "months and years", "in May · in 2027"], ["on", "days and dates", "on Monday · on 15 August"], ["at", "clock times", "at 8 pm · at noon"]]))
+        html: () => tip("grammar-in-on-at", 4, "Grammar tip", "In, On or At?", rows([["in", "months, years", "in May · in 2027"], ["on", "days, dates", "on Monday · on 15 Aug"], ["at", "clock times", "at 8 pm · at noon"]], "Time: from big (<b>in</b>) to small (<b>at</b>)."))
       },
       {
         id: "grammar-interview", group: "grammar", kind: "sq", title: "Interview phrases", meta: "English tip · numbered list",
         prompt: `A confident young Indian woman in formal wear sits across a table in a bright modern office interview room, smiling and speaking with an open hand gesture, the interviewer seen softly from behind, glass walls and a green plant. ${STYLE} Wide 3:2 aspect ratio.`,
-        html: () => tip("grammar-interview", "Interview English", "Sound confident", list(["I'd be happy to walk you through that.", "One example that comes to mind is…", "That's a great question. Let me think.", "What I learned from that was…"]), "Save this for your next interview")
+        html: () => tip("grammar-interview", 5, "Interview English", "Sound confident", list(["I'd be happy to walk you through that.", "One example that comes to mind is…", "That's a great question. Let me think.", "What I learned from that was…"]), "Save this for your next interview")
       },
 
       /* ---------- REELS (covers) ---------- */
