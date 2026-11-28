@@ -2,37 +2,44 @@
 
 ## Join SpeakUp in Hindi (3 Gemini clips, about 30 sec)
 
-Generate these one by one in Gemini (Veo). Each prompt repeats the same description of the person
-so she looks the same in all 3 clips. Each clip ends where the next one starts.
+To keep the clips in sync:
+1. All 3 clips happen in ONE place (her desk), with the same camera, light and clothes.
+2. Each prompt starts with exactly the pose the previous clip ended on.
+3. Best trick: pause clip 1 on its LAST frame, take a screenshot, and upload that image in Gemini
+   together with the clip 2 prompt (and do the same for clip 3). The video then starts from that frame.
 
 ### Clip 1 · The problem
-A young Indian woman, about 24 years old, long black hair in a low ponytail, wearing a mustard yellow
-kurta and small gold earrings, sits in a modern office meeting room with colleagues. Her manager asks
-her a question. She freezes, looks down, and the camera slowly pushes in on her worried face. Cut to
-her at home that evening, sitting at a wooden desk by a window with a green plant, sighing as she opens
-her laptop. A warm Indian female voiceover says in Hindi: "मीटिंग में English बोलते वक़्त डर लगता है?
-शब्द आते हैं, पर बोल नहीं पाते?" Soft, emotional background music. Photorealistic, natural candid
-look, warm light, no on-screen text, no subtitles, no logos. Vertical 9:16.
+Medium shot at eye level, camera fixed slightly to her right. A young Indian woman, about 24 years old,
+long black hair in a low ponytail, mustard yellow kurta, small gold earrings, sits at a wooden desk by a
+window with a green plant on the left, warm golden evening light. She is on a video call on her laptop.
+A man's voice from the laptop asks in English: "So, tell me about yourself." She freezes, says
+"I... um..." and looks down, worried. A warm Indian female voiceover says in Hindi: "English बोलते वक़्त
+डर लगता है?" At the end she picks up green over-ear headphones from the desk, puts them on and looks at
+the laptop screen. The clip ends on her sitting still, headphones on, looking at the laptop.
+Photorealistic, no on-screen text, no subtitles, no logos. Vertical 9:16.
 
 ### Clip 2 · Learning with a trainer
-The same young Indian woman, about 24, long black hair in a low ponytail, mustard yellow kurta, small
-gold earrings, sits at a wooden desk by a window with a green plant, wearing over-ear headphones in a
-live online English class on her laptop. On the laptop screen, a friendly Indian female trainer in
-her thirties, wearing a green kurta, smiles and says in Hindi: "घबराइए मत, गलती करो और सीखो।
-चलिए साथ में बोलते हैं।" The young woman nervously says in English: "Good morning everyone, let me
-introduce myself." Then she smiles with growing confidence. Slow camera move from over her shoulder to
-her face. Upbeat, hopeful music begins. Photorealistic, warm evening light, no on-screen text,
-no subtitles, no logos. Vertical 9:16.
+Starts exactly where the last clip ended: the same medium shot at eye level, camera fixed slightly to her
+right. The same young Indian woman, about 24, long black hair in a low ponytail, mustard yellow kurta,
+small gold earrings, sits at the same wooden desk by the window with a green plant on the left, warm
+golden evening light, wearing green over-ear headphones and looking at her laptop. On the laptop a
+friendly Indian female trainer in a green kurta says in Hindi: "घबराइए मत, चलिए साथ में बोलते हैं।"
+The young woman says in English: "Good morning everyone, let me introduce myself." She smiles with
+growing confidence. At the end she slides the headphones down around her neck, smiling at the laptop.
+The clip ends on her sitting still, headphones around her neck, smiling at the laptop.
+Photorealistic, no on-screen text, no subtitles, no logos. Vertical 9:16.
 
-### Clip 3 · Confidence and the call to action
-The same young Indian woman, about 24, long black hair in a low ponytail, mustard yellow kurta, small
-gold earrings, stands in the same modern office meeting room and speaks English confidently with an
-open hand gesture while her colleagues nod and smile. Then she turns to the camera with a proud smile
-and says in Hindi: "अब मैं बिना डरे English बोलती हूँ। आप भी Join कीजिए SpeakUp, ट्रेनर के साथ
-English बोलना सीखिए।" Bright, uplifting music. Slow pull-back shot. Photorealistic, bright daylight,
-subtle green accents in the room, no on-screen text, no subtitles, no logos. Vertical 9:16.
+### Clip 3 · Join SpeakUp
+Starts exactly where the last clip ended: the same medium shot at eye level, camera fixed slightly to her
+right. The same young Indian woman, about 24, long black hair in a low ponytail, mustard yellow kurta,
+small gold earrings, sits at the same wooden desk by the window with a green plant on the left, warm
+golden evening light, green headphones around her neck, smiling at her laptop. She turns her chair to
+face the camera and says confidently in Hindi: "अब मैं बिना डरे English बोलती हूँ। आप भी Join कीजिए
+SpeakUp, ट्रेनर के साथ English बोलना सीखिए।" She ends with a proud, warm smile at the camera.
+Photorealistic, no on-screen text, no subtitles, no logos. Vertical 9:16.
 
 ### In CapCut, after joining the 3 clips
+- If a join still jumps a little, trim a few frames and add a quick "zoom" or 0.2 s "blur" transition there.
 - End card text (add it yourself, because AI misspells words): **Join SpeakUp** · English Speaking ·
   Learn with a trainer · Link in bio
 - Put the SpeakUp logo in a corner for the whole video.
