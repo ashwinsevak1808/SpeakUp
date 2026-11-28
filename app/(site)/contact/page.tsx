@@ -13,6 +13,7 @@ export default function Contact() {
     { icon: "phone", t: "Call us", v: SITE.phone, href: `tel:${SITE.phoneRaw}` },
     { icon: "mail", t: "Email", v: SITE.email, href: `mailto:${SITE.email}` },
     { icon: "clock", t: "How we teach", v: "100% online. Lessons in your account, live classes on Google Meet.", href: undefined },
+    ...(SITE.address ? [{ icon: "pin", t: SITE.legalName, v: SITE.address, href: undefined }] : []),
   ];
   return (
     <>

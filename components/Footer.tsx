@@ -37,8 +37,10 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-16 flex flex-col items-center justify-between gap-3 border-t border-white/10 py-7 text-sm sm:flex-row">
-          <p>© <Year /> {SITE.name}. All rights reserved.</p>
-          <p className="text-brand-300">Online English classes across India</p>
+          <p>© <Year /> {SITE.legalName}. All rights reserved.</p>
+          <nav aria-label="Legal" className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+            {[["/privacy", "Privacy"], ["/terms", "Terms"], ["/refund-policy", "Refunds"], ["/delivery-policy", "Delivery"]].map(([h, l]) => <Link key={h} href={h} className="transition-colors hover:text-white">{l}</Link>)}
+          </nav>
         </div>
       </Container>
     </footer>

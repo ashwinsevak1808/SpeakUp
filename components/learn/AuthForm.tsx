@@ -107,6 +107,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       {mode !== "forgot" && field("password", mode === "reset" ? "New password" : "Password", "password", mode === "login" ? "current-password" : "new-password")}
       </fieldset>
       {formErr && <p role="alert" className="rounded-md bg-red-50 p-3 text-sm font-medium text-red-700">{formErr}</p>}
+      {mode === "signup" && <p className="text-xs leading-relaxed text-muted">By creating an account you agree to our <Link href="/terms" target="_blank" className="underline underline-offset-2">Terms</Link> and <Link href="/privacy" target="_blank" className="underline underline-offset-2">Privacy Policy</Link>.</p>}
       <button disabled={busy || leaving} className="flex w-full items-center justify-center gap-2.5 rounded-md bg-accent-600 py-3 font-semibold text-white transition-colors hover:bg-accent-700 disabled:cursor-wait disabled:opacity-90">
         {(busy || leaving) && <Spinner />}
         <span aria-live="polite">{leaving ? (mode === "reset" ? "Saved. Opening your dashboard…" : "Opening your dashboard…") : busy ? BUSY[mode] : label}</span>

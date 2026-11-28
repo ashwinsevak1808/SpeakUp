@@ -4,7 +4,7 @@
  *   npm run db:migrate                      apply new files in supabase/migrations, in order
  *   npm run db:role -- you@mail.com owner   make an account owner / trainer / student
  *   npm run db:status                       list applied migrations and account counts
- *   npm run db:payments                     turn on online payment (after adding Razorpay keys to .env.local)
+ *   npm run db:payments                     save the Razorpay secret from .env.local (live or test, by its key id)
  */
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -51,9 +51,13 @@ async function payments() {
   const price = src.match(/price:\s*(\d+)/)?.[1]; const name = src.match(/name:\s*"([^"]+)"/)?.[1];
   if (price) await client.query("insert into private.settings values ('plan_price', $1) on conflict (key) do update set value = excluded.value", [price]);
   if (name) await client.query("insert into private.settings values ('plan_name', $1) on conflict (key) do update set value = excluded.value", [name]);
+  // Live and test secrets are kept side by side: the live site and local development share this database.
+  const id = process.env.RAZORPAY_KEY_ID ?? "";
+  const mode = id.startsWith("rzp_live_") ? "live" : "test";
   const secret = args[0] === "off" ? "" : process.env.RAZORPAY_KEY_SECRET ?? "";
-  await client.query("insert into private.settings values ('razorpay_key_secret', $1) on conflict (key) do update set value = excluded.value", [secret]);
-  console.log(`Plan: ${name} at ₹${price}. Online payment is ${secret ? "ON" : "OFF (no RAZORPAY_KEY_SECRET in .env.local)"}.`);
+  await client.query("insert into private.settings values ($1, $2) on conflict (key) do update set value = excluded.value", [`razorpay_key_secret_${mode}`, secret]);
+  const on = (await client.query("select key from private.settings where key like 'razorpay_key_secret_%' and coalesce(value, '') <> '' order by key")).rows.map((r) => r.key.replace("razorpay_key_secret_", ""));
+  console.log(`Plan: ${name} at ₹${price}. ${mode.toUpperCase()} key ${secret ? "saved" : "removed"}. Payments accepted for: ${on.join(" + ") || "nothing (online payment OFF)"}.`);
 }
 
 /** DANGER: delete every account and all data (tables, rules and payment settings stay), then create one owner.

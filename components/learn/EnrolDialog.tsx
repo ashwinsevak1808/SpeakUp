@@ -68,7 +68,7 @@ export function EnrolDialog({ onClose, week }: { userId?: string; onClose: () =>
               </ul>
               <button onClick={() => buy("plan")} disabled={!!busy || online === null} className="mt-3 w-full rounded-md bg-accent-600 py-3 font-semibold text-white transition-colors hover:bg-accent-700 disabled:opacity-60">{busy === "plan" ? "Opening secure payment…" : `Pay ${price(PLAN.price)}`}</button>
             </div>
-            <p className="flex items-start gap-2 pt-1 text-xs leading-relaxed text-muted"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" />Secure payment by Razorpay: UPI, cards, net banking and wallets. Access unlocks the moment the payment succeeds.</p>
+            <p className="flex items-start gap-2 pt-1 text-xs leading-relaxed text-muted"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" /><span>Secure payment by Razorpay: UPI, cards, net banking and wallets. Access unlocks the moment the payment succeeds. By paying you agree to our <a href="/terms" target="_blank" className="underline underline-offset-2">Terms</a> and <a href="/refund-policy" target="_blank" className="underline underline-offset-2">Refund Policy</a>.</span></p>
           </div>
         )}
         {err && <p role="alert" className="mt-3 rounded-lg bg-red-50 p-3 text-sm font-medium text-red-700">{err}</p>}

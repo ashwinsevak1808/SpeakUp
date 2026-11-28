@@ -17,6 +17,10 @@ export const SITE = {
   youtube: "",   // EDIT
   linkedin: "",  // EDIT
   hours: "100% online · Learn at your own pace",
+  // Legal details shown on the Privacy, Terms, Refund and Delivery pages and the Contact page.
+  legalName: "SpeakUp", // EDIT: your registered business name once registered (e.g. "SpeakUp Learning LLP")
+  address: "", // EDIT: registered business address (Razorpay checks this). Empty hides it.
+  grievanceOfficer: "Ashwin Sevak", // EDIT: person who handles privacy complaints (required in India)
   url: process.env.NEXT_PUBLIC_SITE_URL || "https://speak-up-one-omega.vercel.app", // set NEXT_PUBLIC_SITE_URL when you add your own domain
 };
 

@@ -64,7 +64,7 @@ export function CodeLogin() {
         <div>
           <label htmlFor="c-email" className="mb-1.5 block text-sm font-semibold text-ink">Email</label>
           <input id="c-email" type="email" autoComplete="email" inputMode="email" value={email} disabled={busy} onChange={(e) => setEmail(e.target.value)} className={field} placeholder="you@email.com" />
-          <p className="mt-1.5 text-sm text-muted">We will email you a one-time code. New here? This creates your free account.</p>
+          <p className="mt-1.5 text-sm text-muted">We will email you a one-time code. New here? This creates your free account, and you agree to our <a href="/terms" target="_blank" className="underline underline-offset-2">Terms</a> and <a href="/privacy" target="_blank" className="underline underline-offset-2">Privacy Policy</a>.</p>
         </div>
         {err && <p role="alert" className="rounded-md bg-red-50 p-3 text-sm font-medium text-red-700">{err}</p>}
         {button("Email me a code", "Sending your code…")}
